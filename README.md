@@ -1,6 +1,6 @@
 # thesis
 
-Turku University of Applied Sciences thesis repository
+Turku University of Applied Sciences thesis repository. The thesis is about using locally run, privacy-focused, tech stack tuned LLMs for code generation in agentic style workflows.
 
 ## Local LLMs with Ollama
 
