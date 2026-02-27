@@ -10,4 +10,4 @@ I learned how to use Ollama to run local LLMs. Also learned that the benchmarkin
 
 ### What I want to do next
 
-It's crucial to get the benchmarking right, so I need to research different benchmarking tools and methods for LLMs.
+It's crucial to get the benchmarking right, so I need to research different benchmarking tools and methods for LLMs. Using MLFlow for tracking the experiments seems like a good idea.
