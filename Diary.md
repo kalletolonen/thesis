@@ -41,8 +41,8 @@ Ran the Aider benchmark against the local Qwen 32B model. Also installed MLFlow 
 
 ### What I learned
 
-Was not first able to get the benchmark to run. It seems like there is a problem with the benchmark script.
+Learned that the benchmark is going to take a lot of time to run fully, so I'll need to figure out ways to run language targetted benchmarks instead of the full benchmark.
 
 ### What I want to do next
 
-It's crucial to get the fine-tuning right, so I need to research different fine-tuning methods for LLMs.
+After the benchmark is done, I'll need to figure out how to fine-tune the models to improve their performance. I'll also need to figure out how to use the models in an agentic style workflow.
