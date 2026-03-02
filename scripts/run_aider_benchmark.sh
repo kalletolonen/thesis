@@ -34,16 +34,21 @@ cd "$AIDER_DIR"
 
 # Launch Docker container and run benchmark inside it
 # OLLAMA_API_BASE is set inside the container to reach host Ollama
-./benchmark/docker.sh bash -c "
-    export OLLAMA_API_BASE=http://host.docker.internal:11434
-    pip install -e .[dev] --quiet
-    ./benchmark/benchmark.py '$RUN_NAME' \
-        --model '$MODEL' \
-        --edit-format '$EDIT_FORMAT' \
-        --threads '$THREADS' \
-        --exercises-dir polyglot-benchmark \
-        $*
-"
+docker run \
+    --rm \
+    --memory=12g \
+    --memory-swap=12g \
+    --add-host=host.docker.internal:host-gateway \
+    -v "$AIDER_DIR":/aider \
+    -v "$AIDER_DIR"/tmp.benchmarks/.:/benchmarks \
+    -e OLLAMA_API_BASE="http://host.docker.internal:11434" \
+    -e AIDER_DOCKER=1 \
+    -e AIDER_BENCHMARK_DIR=/benchmarks \
+    -e HOME=/tmp \
+    -w /aider \
+    --user "$(id -u):$(id -g)" \
+    aider-benchmark \
+    bash -c "pip install --user -e .[dev] --quiet 2>/dev/null; ./benchmark/benchmark.py '$RUN_NAME' --model '$MODEL' --edit-format '$EDIT_FORMAT' --threads '$THREADS' --exercises-dir polyglot-benchmark $*"
 
 echo ""
 echo "=== Benchmark complete ==="
