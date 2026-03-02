@@ -35,3 +35,61 @@ To run and interact with a model in your terminal:
 ollama run qwen2.5-coder:32b
 ollama run qwen2.5-coder:7b
 ```
+
+### Ollama Context Window
+
+Ollama defaults to a 2K context window, which is too small for Aider (it silently drops context). Increase it before running benchmarks:
+
+```bash
+# Option 1: Set when starting Ollama
+OLLAMA_CONTEXT_LENGTH=8192 ollama serve
+
+# Option 2: Set via environment variable (add to ~/.zshrc)
+export OLLAMA_CONTEXT_LENGTH=8192
+```
+
+## Benchmarking with Aider
+
+We use the [Aider polyglot benchmark](https://aider.chat/2024/12/21/polyglot.html) — 225 Exercism coding exercises across C++, Go, Java, JavaScript, Python, and Rust. See [docs/architecture.md](docs/architecture.md) for full architecture diagrams.
+
+### Setup
+
+```bash
+# Clone aider and the exercise set (one-time)
+git clone https://github.com/Aider-AI/aider.git
+cd aider && mkdir tmp.benchmarks
+git clone https://github.com/Aider-AI/polyglot-benchmark tmp.benchmarks/polyglot-benchmark
+./benchmark/docker_build.sh
+cd ..
+
+# Install Python dependencies
+pip install mlflow pyyaml
+```
+
+### Running the Benchmark
+
+```bash
+# Smoke test (2 exercises)
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 smoke-test --num-tests 2
+
+# Full benchmark (225 exercises)
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 qwen32b-full
+
+# Benchmark the 7b model
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:7b whole 1 qwen7b-full
+```
+
+### Logging Results to MLflow
+
+```bash
+# Generate stats from a benchmark run
+cd aider
+./benchmark/benchmark.py --stats tmp.benchmarks/<results-dir>
+cd ..
+
+# Log to MLflow
+python scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir>
+
+# View results in browser
+mlflow ui  # http://localhost:5000
+```
