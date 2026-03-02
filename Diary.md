@@ -37,7 +37,7 @@ Learned that there are many different benchmarking tools and methods for LLMs. A
 
 ### What I did
 
-Ran the Aider benchmark against the local Qwen 32B model. Also installed MLFlow in a virtual environment to have visibility of the results. The benchmark did not run at first, but after some debugging I got it to run.
+Ran the Aider benchmark against the local Qwen 32B model. Also installed MLFlow in a virtual environment to have visibility of the results. The benchmark did not run at first, but after some debugging I got it to run. Then I made the results include charts and a summary markdown file.
 
 ### What I learned
 
