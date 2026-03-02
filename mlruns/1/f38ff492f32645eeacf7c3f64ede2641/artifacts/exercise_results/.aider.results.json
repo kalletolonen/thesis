@@ -1,0 +1,35 @@
+{
+    "testdir": "/benchmarks/2026-03-02-16-11-28--pipeline-test/javascript/exercises/practice/sum-of-multiples",
+    "testcase": "sum-of-multiples",
+    "model": "ollama_chat/qwen2.5-coder:32b",
+    "edit_format": "whole",
+    "tests_outcomes": [
+        false,
+        false
+    ],
+    "cost": 0.0,
+    "duration": 95.71381998062134,
+    "test_timeouts": 0,
+    "commit_hash": "b235160",
+    "num_error_outputs": 0,
+    "num_user_asks": 0,
+    "num_exhausted_context_windows": 0,
+    "num_malformed_responses": 0,
+    "syntax_errors": 0,
+    "indentation_errors": 0,
+    "lazy_comments": 0,
+    "reasoning_effort": null,
+    "prompt_tokens": 5238,
+    "completion_tokens": 377,
+    "thinking_tokens": null,
+    "chat_hashes": [
+        [
+            "36b070e066ce5b29ec8178cda0f697814c889283",
+            "70bf85cc23deaef9da9f59aa60da6f3566923062"
+        ],
+        [
+            "7718fe0b96e960f7dbfc37473eaa19c181b60004",
+            "725d8f2385efa3da35cb4375495c238c45041cfb"
+        ]
+    ]
+}

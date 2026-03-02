@@ -62,17 +62,21 @@ git clone https://github.com/Aider-AI/polyglot-benchmark tmp.benchmarks/polyglot
 ./benchmark/docker_build.sh
 cd ..
 
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
 # Install Python dependencies
-pip install mlflow pyyaml
+pip install mlflow
 ```
 
 ### Running the Benchmark
 
 ```bash
-# Smoke test (2 exercises)
-./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 smoke-test --num-tests 2
+# Smoke test (1 exercise, ~2 min)
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 smoke-test --new --num-tests 1
 
-# Full benchmark (225 exercises)
+# Full benchmark (225 exercises, ~8 hours with 32b)
 ./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 qwen32b-full
 
 # Benchmark the 7b model
@@ -82,13 +86,10 @@ pip install mlflow pyyaml
 ### Logging Results to MLflow
 
 ```bash
-# Generate stats from a benchmark run
-cd aider
-./benchmark/benchmark.py --stats tmp.benchmarks/<results-dir>
-cd ..
+source .venv/bin/activate  # if not already active
 
-# Log to MLflow
-python scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir>
+# Log benchmark results directly to MLflow (reads .aider.results.json files)
+python3 scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir>
 
 # View results in browser
 mlflow ui  # http://localhost:5000
