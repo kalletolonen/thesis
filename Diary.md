@@ -33,7 +33,7 @@ Set up the benchmarking pipeline with AI generated scripts:
 
 Learned that there are many different benchmarking tools and methods for LLMs. Also learned that MLFlow is a good tool for tracking experiments https://mlflow.org/docs/latest/ml/tracking/.
 
-## 3.3.2026
+## 2.3.2026
 
 ### What I did
 
@@ -46,3 +46,17 @@ Learned that the benchmark is going to take a lot of time to run fully, so I'll 
 ### What I want to do next
 
 After the benchmark is done, I'll need to figure out how to fine-tune the models to improve their performance. I'll also need to figure out how to use the models in an agentic style workflow.
+
+## 3.3.2026
+
+### What I did
+
+Ran the Aider benchmark against the local Qwen 32B model for the whole benchmark. Started to second guess the OLLAMA_CONTEXT_LENGTH=8192 setting, so I added that to MLFlow logging. Pip requireremts were frozen, since they may provide variance in results otherwise.
+
+### What I learned
+
+Benchmarking is time consuming, so it's productive to run it overnight to utilize the time when I'm not using resources for other tasks.
+
+### What I want to do next
+
+I need to run the benchmark for the 7b model too at some point in the future to have a baseline for comparison for that one too and gather info on other possible models to use.

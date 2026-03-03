@@ -83,14 +83,47 @@ pip install mlflow
 ./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:7b whole 1 qwen7b-full
 ```
 
+### Running for Specific Languages
+
+Use `--languages` (or `-l`) with a comma-separated list to run only a subset of the six supported languages (C++, Go, Java, JavaScript, Python, Rust):
+
+```bash
+# Python only
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 qwen32b-python --languages "python"
+
+# Python + JavaScript
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 qwen32b-py-js --languages "python,javascript"
+```
+
+You can also filter by exercise name keywords with `--keywords` / `-k`:
+
+```bash
+# Only exercises whose name contains "hello"
+./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 hello-test --keywords "hello"
+```
+
+When reviewing stats from a completed full run, use `--stats-languages` to show results for specific languages without re-running:
+
+```bash
+cd aider
+./benchmark/benchmark.py --stats --stats-languages "python,rust" tmp.benchmarks/<results-dir>
+```
+
 ### Logging Results to MLflow
 
 ```bash
 source .venv/bin/activate  # if not already active
 
-# Log benchmark results directly to MLflow (reads .aider.results.json files)
+# Log benchmark results to MLflow (reads .aider.results.json files)
 python3 scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir>
+
+# Specify the Ollama context window size used during the benchmark
+python3 scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir> --context-window 8192
 
 # View results in browser
 mlflow ui  # http://localhost:5000
 ```
+
+The `--context-window` flag records the Ollama context window size as an MLflow parameter. If omitted, the script reads `$OLLAMA_CONTEXT_LENGTH` from the environment, falling back to Ollama's default of 2048.
+
+The MLflow script aggregates all `.aider.results.json` files found under the results directory. If the benchmark was run with `--languages`, only those languages will have results, and the MLflow metrics will reflect that subset automatically.
