@@ -14,6 +14,7 @@ Example:
 
 import argparse
 import json
+import os
 import sys
 import tempfile
 from collections import defaultdict
@@ -318,7 +319,7 @@ def log_to_mlflow(stats: dict, results: list[dict], results_dir: Path):
 
     param_keys = [
         "model", "edit_format", "commit_hash", "dirname",
-        "completed_tests", "total_tests",
+        "completed_tests", "total_tests", "context_window",
     ]
     metric_keys = [
         "pass_rate_1", "pass_rate_2",
@@ -393,7 +394,19 @@ def main():
         type=Path,
         help="Path to the benchmark results directory",
     )
+    parser.add_argument(
+        "--context-window",
+        type=int,
+        default=None,
+        help="Ollama context window size (defaults to $OLLAMA_CONTEXT_LENGTH or 2048)",
+    )
     args = parser.parse_args()
+
+    # Resolve context window: CLI arg > env var > Ollama default (2048)
+    context_window = (
+        args.context_window
+        or int(os.environ.get("OLLAMA_CONTEXT_LENGTH", 2048))
+    )
 
     if not args.results_dir.is_dir():
         print(f"ERROR: {args.results_dir} is not a directory", file=sys.stderr)
@@ -410,6 +423,7 @@ def main():
 
     print(f"  Found {len(results)} exercise results")
     stats = aggregate_stats(results, args.results_dir)
+    stats["context_window"] = context_window
     log_to_mlflow(stats, results, args.results_dir)
 
 
