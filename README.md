@@ -38,15 +38,7 @@ ollama run qwen2.5-coder:7b
 
 ### Ollama Context Window
 
-Ollama defaults to a 2K context window, which is too small for Aider (it silently drops context). Increase it before running benchmarks:
-
-```bash
-# Option 1: Set when starting Ollama
-OLLAMA_CONTEXT_LENGTH=8192 ollama serve
-
-# Option 2: Set via environment variable (add to ~/.zshrc)
-export OLLAMA_CONTEXT_LENGTH=8192
-```
+Ollama's default 2048 token context window does **not** affect Aider benchmark runs. Aider automatically calculates and sets `num_ctx` per request based on actual message size (`tokens * 1.25 + 8192`), so the context window is always sized appropriately for each exercise. The `--num-ctx` flag can be used to override this with a fixed value, but it is not necessary.
 
 ## Benchmarking with Aider
 
@@ -114,16 +106,13 @@ cd aider
 ```bash
 source .venv/bin/activate  # if not already active
 
-# Log benchmark results to MLflow (reads .aider.results.json files)
-python3 scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir>
-
-# Specify the Ollama context window size used during the benchmark
-python3 scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir> --context-window 8192
+# Log benchmark results to MLflow — always pass --context-window to match --num-ctx used in the run
+python3 scripts/log_benchmark_to_mlflow.py aider/tmp.benchmarks/<results-dir> --context-window 32768
 
 # View results in browser
 mlflow ui  # http://localhost:5000
 ```
 
-The `--context-window` flag records the Ollama context window size as an MLflow parameter. If omitted, the script reads `$OLLAMA_CONTEXT_LENGTH` from the environment, falling back to Ollama's default of 2048.
+The `--context-window` flag records the Ollama context window size as an MLflow parameter. If omitted, the script reads `$OLLAMA_CONTEXT_LENGTH` from the environment, falling back to Ollama's default of 2048. This value should match the `--num-ctx` value you passed to the benchmark script.
 
 The MLflow script aggregates all `.aider.results.json` files found under the results directory. If the benchmark was run with `--languages`, only those languages will have results, and the MLflow metrics will reflect that subset automatically.

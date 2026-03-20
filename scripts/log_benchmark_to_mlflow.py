@@ -15,6 +15,7 @@ Example:
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
 from collections import defaultdict
@@ -25,6 +26,8 @@ matplotlib.use("Agg")  # non-interactive backend
 import matplotlib.pyplot as plt
 import pandas as pd
 import mlflow
+import mlflow.data
+from mlflow.data.pandas_dataset import PandasDataset
 
 
 EXPERIMENT_NAME = "aider-polyglot-benchmark"
@@ -136,6 +139,30 @@ def aggregate_stats(results: list[dict], results_dir: Path) -> dict:
     stats["dirname"] = results_dir.name
 
     return stats
+
+
+def compute_per_language_stats(results: list[dict]) -> dict[str, dict]:
+    """Compute pass rate and exercise count per language."""
+    lang_total = defaultdict(int)
+    lang_passed = defaultdict(int)
+
+    for r in results:
+        lang = r.get("language", "unknown")
+        lang_total[lang] += 1
+        outcomes = r.get("tests_outcomes", [])
+        if outcomes and outcomes[-1]:
+            lang_passed[lang] += 1
+
+    per_lang = {}
+    for lang in sorted(lang_total):
+        total = lang_total[lang]
+        passed = lang_passed[lang]
+        per_lang[lang] = {
+            "exercises": total,
+            "passed": passed,
+            "pass_rate": round(100 * passed / total, 1) if total else 0,
+        }
+    return per_lang
 
 
 # ── Chart generators ─────────────────────────────────────────────────────────
@@ -311,7 +338,25 @@ def generate_summary_markdown(stats: dict, results: list[dict], out_path: Path):
 
 # ── MLflow logging ───────────────────────────────────────────────────────────
 
-def log_to_mlflow(stats: dict, results: list[dict], results_dir: Path):
+def _parse_model_tag(model_str: str) -> tuple[str, str]:
+    """Extract model family and size from model string like 'ollama_chat/qwen2.5-coder:32b'."""
+    # Strip provider prefix (e.g. ollama_chat/)
+    name = model_str.split("/")[-1] if "/" in model_str else model_str
+    # Split on colon for size tag
+    parts = name.rsplit(":", 1)
+    family = parts[0] if parts else name
+    size = parts[1] if len(parts) > 1 else "unknown"
+    return family, size
+
+
+def log_to_mlflow(
+    stats: dict,
+    results: list[dict],
+    results_dir: Path,
+    *,
+    purpose: str = "baseline",
+    generate_charts: bool = True,
+):
     """Log aggregated benchmark results, charts, and summary to MLflow."""
     mlflow.set_experiment(EXPERIMENT_NAME)
 
@@ -334,11 +379,15 @@ def log_to_mlflow(stats: dict, results: list[dict], results_dir: Path):
         "prompt_tokens", "completion_tokens",
     ]
 
+    per_lang = compute_per_language_stats(results)
+
     with mlflow.start_run(run_name=run_name):
+        # ── Parameters ────────────────────────────────────────────────
         for key in param_keys:
             if key in stats:
                 mlflow.log_param(key, stats[key])
 
+        # ── Aggregate metrics ─────────────────────────────────────────
         for key in metric_keys:
             if key in stats and stats[key] is not None:
                 try:
@@ -346,26 +395,87 @@ def log_to_mlflow(stats: dict, results: list[dict], results_dir: Path):
                 except (ValueError, TypeError):
                     pass
 
-        # Generate and log visual artifacts
+        # ── Per-language metrics ──────────────────────────────────────
+        for lang, lang_stats in per_lang.items():
+            mlflow.log_metric(f"pass_rate_{lang}", lang_stats["pass_rate"])
+            mlflow.log_metric(f"passed_{lang}", lang_stats["passed"])
+            mlflow.log_metric(f"exercises_{lang}", lang_stats["exercises"])
+
+        # ── Tags for searchable categorization ────────────────────────
+        model_str = stats.get("model", "")
+        model_family, model_size = _parse_model_tag(model_str)
+        languages = ",".join(sorted(per_lang.keys()))
+
+        mlflow.set_tags({
+            "model_family": model_family,
+            "model_size": model_size,
+            "benchmark": "polyglot",
+            "languages": languages,
+            "purpose": purpose,
+        })
+
+        # ── Run description (shows in the runs table) ─────────────────
+        completed = stats.get("completed_tests", 0)
+        total = stats.get("total_tests", 0)
+        pass_rate = stats.get("pass_rate_1", "?")
+        ctx = stats.get("context_window", "?")
+        mlflow.set_tag(
+            "mlflow.note.content",
+            f"**{model_str}** / {stats.get('edit_format', '?')} / ctx={ctx}\n"
+            f"Result: {pass_rate}% pass (try 1), {completed}/{total} exercises\n"
+            f"Languages: {languages}\n"
+            f"Purpose: {purpose}",
+        )
+
+        # ── Dataset tracking ──────────────────────────────────────────
+        exercise_df = pd.DataFrame([
+            {
+                "language": r.get("language", "unknown"),
+                "testcase": r.get("testcase", "unknown"),
+                "passed": bool(r.get("tests_outcomes", []) and r["tests_outcomes"][-1]),
+                "duration": r.get("duration", 0),
+                "cost": r.get("cost", 0),
+                "prompt_tokens": r.get("prompt_tokens", 0),
+                "completion_tokens": r.get("completion_tokens", 0),
+                "syntax_errors": r.get("syntax_errors", 0),
+                "num_malformed_responses": r.get("num_malformed_responses", 0),
+            }
+            for r in results
+        ])
+
+        dataset = mlflow.data.from_pandas(
+            exercise_df,
+            name="polyglot-benchmark",
+        )
+        mlflow.log_input(dataset, context="evaluation")
+
+        # ── Artifacts ─────────────────────────────────────────────────
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
 
-            # Charts
-            print("  Generating charts...")
-            pass_chart = tmpdir / "pass_rate.png"
-            generate_pass_rate_chart(stats, pass_chart)
-            if pass_chart.exists():
-                mlflow.log_artifact(str(pass_chart), artifact_path="charts")
+            # CSV exercise results table
+            print("  Saving exercise results CSV...")
+            csv_path = tmpdir / "exercise_results.csv"
+            exercise_df.to_csv(csv_path, index=False)
+            mlflow.log_artifact(str(csv_path), artifact_path="data")
 
-            lang_chart = tmpdir / "results_by_language.png"
-            generate_language_chart(results, lang_chart)
-            if lang_chart.exists():
-                mlflow.log_artifact(str(lang_chart), artifact_path="charts")
+            # Charts (optional)
+            if generate_charts:
+                print("  Generating charts...")
+                pass_chart = tmpdir / "pass_rate.png"
+                generate_pass_rate_chart(stats, pass_chart)
+                if pass_chart.exists():
+                    mlflow.log_artifact(str(pass_chart), artifact_path="charts")
 
-            error_chart = tmpdir / "error_breakdown.png"
-            generate_error_chart(stats, error_chart)
-            if error_chart.exists():
-                mlflow.log_artifact(str(error_chart), artifact_path="charts")
+                lang_chart = tmpdir / "results_by_language.png"
+                generate_language_chart(results, lang_chart)
+                if lang_chart.exists():
+                    mlflow.log_artifact(str(lang_chart), artifact_path="charts")
+
+                error_chart = tmpdir / "error_breakdown.png"
+                generate_error_chart(stats, error_chart)
+                if error_chart.exists():
+                    mlflow.log_artifact(str(error_chart), artifact_path="charts")
 
             # Markdown summary
             print("  Generating summary...")
@@ -400,6 +510,17 @@ def main():
         default=None,
         help="Ollama context window size (defaults to $OLLAMA_CONTEXT_LENGTH or 2048)",
     )
+    parser.add_argument(
+        "--purpose",
+        type=str,
+        default="baseline",
+        help="Run purpose tag, e.g. 'baseline', 'fine-tuned', 'ablation' (default: baseline)",
+    )
+    parser.add_argument(
+        "--no-charts",
+        action="store_true",
+        help="Skip matplotlib chart generation (rely on MLflow UI comparisons)",
+    )
     args = parser.parse_args()
 
     # Resolve context window: CLI arg > env var > Ollama default (2048)
@@ -424,7 +545,11 @@ def main():
     print(f"  Found {len(results)} exercise results")
     stats = aggregate_stats(results, args.results_dir)
     stats["context_window"] = context_window
-    log_to_mlflow(stats, results, args.results_dir)
+    log_to_mlflow(
+        stats, results, args.results_dir,
+        purpose=args.purpose,
+        generate_charts=not args.no_charts,
+    )
 
 
 if __name__ == "__main__":
