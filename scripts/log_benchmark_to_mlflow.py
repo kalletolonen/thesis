@@ -30,19 +30,20 @@ import mlflow.data
 from mlflow.data.pandas_dataset import PandasDataset
 
 
-EXPERIMENT_NAME = "aider-polyglot-benchmark"
+EXPERIMENT_NAME = "aider-local-agent-benchmark"
 
 
 def load_exercise_results(results_dir: Path) -> list[dict]:
     """Load all .aider.results.json files from the results directory."""
     results = []
-    for fname in results_dir.glob("*/exercises/practice/*/.aider.results.json"):
+    for fname in results_dir.rglob(".aider.results.json"):
         try:
             data = json.loads(fname.read_text())
             if data:
-                # Add language info from path
+                # Add language/task info from path
                 parts = str(fname.relative_to(results_dir)).split("/")
                 data["language"] = parts[0] if parts else "unknown"
+                data["task"] = parts[-2] if len(parts) >= 2 else "unknown"
                 results.append(data)
         except (json.JSONDecodeError, OSError) as e:
             print(f"  Warning: skipping {fname}: {e}", file=sys.stderr)

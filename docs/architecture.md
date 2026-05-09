@@ -1,8 +1,55 @@
-# Benchmarking Architecture
+# System Architecture
 
 ## Overview
 
-The benchmarking pipeline evaluates locally-run Qwen LLMs on coding tasks from the [Aider polyglot benchmark](https://aider.chat/2024/12/21/polyglot.html) (225 Exercism exercises across 6 languages). Results are tracked in MLflow for experiment comparison.
+The thesis currently evaluates an entirely private, local agentic workflow utilizing locally-run quantized models (e.g., Gemma 4). It evaluates autonomous agent abilities such as multi-step refactoring, linter loops, and project orchestration using IDE-native extensions (like Continue/Aider).
+
+## Agentic IDE Architecture
+
+```mermaid
+flowchart TB
+    subgraph Host["Host Machine (macOS)"]
+        IDE["VS Code / IDE\n(Agent UI)"]
+        Ollama["Ollama Server\n(Gemma-4-quantized)\nlocalhost:11434"]
+        LocalEmbed["Local Embedding Model\n(e.g. nomic-embed-text)"]
+        VectorDB["Local Vector Store\n(Chroma/FAISS)"]
+        Linter["Language Linters / Compilers"]
+    end
+
+    IDE -- "Tool calls & chat (Local API)" --> Ollama
+    Ollama -- "Code edits & terminal commands" --> IDE
+    IDE -- "Index sources" --> LocalEmbed
+    LocalEmbed -- "Embeddings" --> VectorDB
+    IDE -- "Semantic search" --> VectorDB
+    IDE -- "Run build/lint validation" --> Linter
+    Linter -- "Errors (Fed to agent)" --> IDE
+```
+
+## Agentic Workflow Data Flow
+
+```mermaid
+sequenceDiagram
+    participant U as Developer (VS Code)
+    participant A as IDE Agent
+    participant E as Embeddings / RAG
+    participant O as Ollama (Gemma 4)
+    participant L as Workspace Linters
+
+    U->>A: "Refactor feature X to support Y"
+    A->>E: Query codebase for X
+    E-->>A: Relevant code snippets
+    A->>O: Prompt: intent + code chunks + tools
+    O-->>A: Tool Call: read_file(path)
+    A-->>O: File contents
+    O-->>A: Tool Call: edit_file(path, replacements)
+    A->>L: Save & Run diagnostics
+    L-->>A: Linting/Compile errors
+    A->>O: Prompt: Fix these errors
+    O-->>A: Tool Call: edit_file(path, final_replacements)
+    A->>U: Validation complete, ready for review
+```
+
+## Benchmarking Architecture (Legacy / Polyglot)
 
 ## System Diagram
 

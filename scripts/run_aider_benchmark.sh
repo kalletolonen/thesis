@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Run the Aider polyglot benchmark against a local Ollama model.
+# Run the Aider agentic benchmark against a local Ollama model (tailored for Gemma 4 / Local Agent testing).
 # Usage: ./scripts/run_aider_benchmark.sh [MODEL] [EDIT_FORMAT] [THREADS] [RUN_NAME]
 #
 # Examples:
-#   ./scripts/run_aider_benchmark.sh                                          # defaults: qwen2.5-coder:32b, whole, 1 thread
-#   ./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:7b whole 1 qwen7b-test
+#   ./scripts/run_aider_benchmark.sh                                          # defaults: gemma4:9b, tool, 1 thread
+#   ./scripts/run_aider_benchmark.sh ollama_chat/gemma4:9b tool 1 gemma4-agent-test
 #   ./scripts/run_aider_benchmark.sh ollama_chat/qwen2.5-coder:32b whole 1 qwen32b-smoke --num-tests 2
 set -euo pipefail
 
-MODEL="${1:-ollama_chat/qwen2.5-coder:32b}"
-EDIT_FORMAT="${2:-whole}"
+MODEL="${1:-ollama_chat/gemma4:9b}"
+EDIT_FORMAT="${2:-tool}"
 THREADS="${3:-1}"
-RUN_NAME="${4:-qwen-bench}"
+RUN_NAME="${4:-gemma4-bench}"
 shift 4 2>/dev/null || true  # remaining args passed through to benchmark.py
 
 AIDER_DIR="$(cd "$(dirname "$0")/../aider" && pwd)"
@@ -48,9 +48,9 @@ docker run \
     -w /aider \
     --user "$(id -u):$(id -g)" \
     aider-benchmark \
-    bash -c "pip install --user -e .[dev] --quiet 2>/dev/null; ./benchmark/benchmark.py '$RUN_NAME' --model '$MODEL' --edit-format '$EDIT_FORMAT' --threads '$THREADS' --exercises-dir polyglot-benchmark $*"
+    bash -c "pip install --user -e .[dev] --quiet 2>/dev/null; ./benchmark/benchmark.py '$RUN_NAME' --model '$MODEL' --edit-format '$EDIT_FORMAT' --threads '$THREADS' --dataset swe-bench-lite $*"
 
 echo ""
-echo "=== Benchmark complete ==="
+echo "=== Agentic Benchmark complete ==="
 echo "Results in: $AIDER_DIR/tmp.benchmarks/"
 echo "Generate report: ./benchmark/benchmark.py --stats tmp.benchmarks/<results-dir>"
