@@ -492,7 +492,7 @@ Summary for Launch: To get to a "launch-ready" state, the team primarily needs t
 
 While Gemini 3.1 Pro produced:
 
-````
+```
 Phase 1: Onboarding & Branding
 Extended storefront branding: Premium customization options for bakers (fonts, hero images, layout themes) to give their pages a professional website feel.
 Phase 4: Payments
@@ -517,41 +517,52 @@ Non-local rollout of FORCE RLS (Row-Level Security), which is currently deferred
 Both answers are atleast sane suggestions.
 
 It did not solve for the issue of having too large of a ROADMAP.md file, so I looked into RAG (Retrieval-Augmented Generation) and Vectorization to improve hit rate SOURCE HERE.
-````
+
+```
 
 ## 7.5.2026
 
 Looking into RAG, I went the vectorization route and standardized around Qwen3-Embedding-4B-model for the embeddings after research SOURCE HERE.
 
 ```
+
 ollama pull qwen3-embedding:4b
+
 ```
 
 First experiment was to index the ROADMAP.md file:
 
 ```
+
 ollama create roadmap-index -f MODELFILE_RAG.md
+
 ```
 
 MODELFILE_RAG.md:
 
 ```
+
 FROM qwen3-embedding:4b
 
 # Use semantic hashing to find similar chunks
+
 # This is more reliable than simple keyword matching
+
 PARAMETER sematic_search true
 
 # Keep context window small - we only need the relevant chunks
+
 PARAMETER num_ctx 2048
 
 # High temperature for more creative retrieval (surprising but relevant chunks)
+
 PARAMETER temperature 0.7
 
 SYSTEM """
 You are a retrieval system for a Go + Svelte e-commerce platform. Your job is to find the most relevant pieces of documentation for the user's query.
 
 When the user asks a question:
+
 1. Break down the query into key concepts
 2. Search for semantically similar chunks in the ROADMAP.md index
 3. Return the top 5 most relevant chunks
@@ -559,6 +570,7 @@ When the user asks a question:
 
 Think like a product manager who needs to understand what features are planned, what's already built, and what's missing.
 """
+
 ```
 
 ## 9.5.2026
@@ -566,45 +578,46 @@ Think like a product manager who needs to understand what features are planned, 
 Continue.dev didn't seem to co-operate first with repo specific configurations, as it kept using the global ones. Adding a .continuerc.json in .continue folder worked like a charm.
 
 ```
+
 {
-  "mergeBehavior": "overwrite",
-  "disableIndexing": false,
-  "models": [
-    {
-      "title": "PM Go+Svelte repo",
-      "provider": "ollama",
-      "model": "dev-gosvelte"
-    },
-    {
-      "title": "PM Go+Svelte repo",
-      "provider": "ollama",
-      "model": "pm-gosvelte"
-    },
-    {
-      "title": "Gemma 4 (31B) repo",
-      "provider": "ollama",
-      "model": "gemma4:31b"
-    },
-    {
-      "title": "Qwen2.5-Coder (32B) repo",
-      "provider": "ollama",
-      "model": "qwen2.5-coder:32b"
-    },
-    {
-      "title": "Qwen2.5-Coder (7B) repo",
-      "provider": "ollama",
-      "model": "qwen2.5-coder:7b"
-    }
-  ],
-  "tabAutocompleteModel": {
-    "title": "Qwen2.5-Coder (7B) repo",
-    "provider": "ollama",
-    "model": "qwen2.5-coder:7b"
-  },
-  "embeddingsProvider": {
-    "provider": "ollama",
-    "model": "qwen3-embedding-4b"
-  }
+"mergeBehavior": "overwrite",
+"disableIndexing": false,
+"models": [
+{
+"title": "PM Go+Svelte repo",
+"provider": "ollama",
+"model": "dev-gosvelte"
+},
+{
+"title": "PM Go+Svelte repo",
+"provider": "ollama",
+"model": "pm-gosvelte"
+},
+{
+"title": "Gemma 4 (31B) repo",
+"provider": "ollama",
+"model": "gemma4:31b"
+},
+{
+"title": "Qwen2.5-Coder (32B) repo",
+"provider": "ollama",
+"model": "qwen2.5-coder:32b"
+},
+{
+"title": "Qwen2.5-Coder (7B) repo",
+"provider": "ollama",
+"model": "qwen2.5-coder:7b"
+}
+],
+"tabAutocompleteModel": {
+"title": "Qwen2.5-Coder (7B) repo",
+"provider": "ollama",
+"model": "qwen2.5-coder:7b"
+},
+"embeddingsProvider": {
+"provider": "ollama",
+"model": "qwen3-embedding-4b"
+}
 }
 
 ```
@@ -612,6 +625,7 @@ Continue.dev didn't seem to co-operate first with repo specific configurations, 
 Continue builds the RAG index automatically using the configured embeddings provider. While doing this, I realized that VSC natively supports local ollama models without any plugins, and decided to give it a spin. However, VSC's version of locally run models can't use RAG index SOURCE HERE. This is highly problematic, since the model is basicly guessing instead of verifying from the whole ROADMAP.md.
 
 ```
+
 Planned Product Features
 These are the next high-priority items in the product delivery track:
 
@@ -633,6 +647,7 @@ Searched for regex photo|upload|image, 20 results
 I apologize—I was relying on the Roadmap Summary and Planned sections at the top of ROADMAP.md, which list "customer and baker photo uploads" as next steps.
 
 However, looking further down in the document, I see they are actually marked as completed:
+
 ```
 
 That led back to the Continue.dev configuration, since that's where we can make the model behave better, and use a RAG-approach. Next I tested it again with the Qwen embeddings model and a new Gemma-model, gemma4:31b-coding-mtp-bf16, since it's supposed to be faster SOURCE HERE.
@@ -640,20 +655,25 @@ That led back to the Continue.dev configuration, since that's where we can make 
 And then I hit another snag, as indexing has been deprecated in the Continue.dev workflow: [Documentation](https://docs.continue.dev/guides/codebase-documentation-awareness). So I removed the relevant lines from the model files, and we're back to square one, but with a better model. And that failed too, since I did not have enough GPU memory.
 
 ```
+
 "model requires 59.1 GiB but only 35.5 GiB are available (after 512.0 MiB overhead)"
+
 ```
 
 Then I redid the gemma4-customizations again with the 31B model and tried again. This time with the Agent-mode directly, instead of plan-mode. I also made a change, as a rule was added based on the SOURCE HERE Continue.dev docs.
 
 ```
+
 # ROADMAP.md Context
 
 The overall project plan, built features, in-progress items, and next milestones are managed in `/ROADMAP.md`. When answering questions about project goals, timelines, or built vs planned features, use the file exploration tools to read the relevant sections of `ROADMAP.md`.
+
 ```
 
 And yet again, we did get the same results, where we have hallucinated that the baker photo uploads are still undone.
 
 ```
+
 Based on the ROADMAP.md, the project is currently in Phase 5 (Calendar Tooling) and the Auth-Hardening track.
 
 The "Next planned" items are explicitly listed in the Roadmap Summary:
@@ -674,24 +694,31 @@ Built: Stripe Connect APIs, MFA/Recovery flows, and the production calendar boar
 In-Progress: Calendar availability backend is in place, and dashboard modularization is underway.
 Deferred: The "FORCE RLS" rollout for Auth Phase 5 is deferred until a non-local server environment is available.
 Recommendation: Depending on whether you want to focus on Revenue/Onboarding or Product Depth, I suggest starting with either the Stripe identity-prefill (to smooth the onboarding funnel) or the per-product capacity (to make the calendar tooling truly production-ready for complex bakers).
+
 ```
 
 So, naturally the next step was to ask the model again why it hallucated the baker photo uploads. And the result was that the summary in the ROADMAP.md was outdated, which is correct. This is quite common in my experience in software projects - the documentation is not up to date with the code. We should be able to fit a 56kb document into the context, as it's not that huge, so we added a line for each of our models in .continuerc.json.
 
 ```
+
 "contextLength": 32768
+
 ```
 
 The next customization was to modify the MODELFILE-files to incluce the context setting too:
 
 ```
+
 PARAMETER num_ctx 32768
+
 ```
 
 The new prompt was including the context for the file as such:
 
 ```
-What should we work on next from our  @ROADMAP.md?
+
+What should we work on next from our @ROADMAP.md?
+
 ```
 
 That still resulted in the model being confused, since the summmary suggested that the photo uploads are still undone. So then the next idea was to remove the summmary from the file, as that's redundant information. This did improve the results significantly.
@@ -699,15 +726,909 @@ That still resulted in the model being confused, since the summmary suggested th
 The answer from Gemini 3.1 Pro:
 
 ```
+
 Based on your ROADMAP.md, there are a few unfinished items from earlier phases, as well as the main tasks remaining in your current phase (Phase 6: Polish & Hardening).
+
 ```
 
 And from the pm-gosvelte model:
 
 ```
+
 Based on the
 ROADMAP.md
 , the project is very far along, with Phases 0 through 5 completely finished and Phase 6 (Production Hardening) nearly complete.
+
 ```
 
 This raised hopes for the locally run model to be able to read and understand the ROADMAP.md file correctly. After this pm-flow, we needed to quantify and scope a unit of work for the coding-flow.
+
+## 10.5.2026
+
+So then the next thing to verify was the scoping of work to be done. So I asked the model to propose a single feature to be implemented. My intuition was that this was a straightforward enough task that the model would be able to determine that we need: UI for managing tags (CRUD) and API endpoints for managing tags, and that it would propose the implementation of these tasks. The feature is also "blue ocean", in that sense that it's fresh code, and thus something that shouldn't cause regressions in the existing codebase.
+
+Prompt used (Plan mode):
+
+```
+
+@ROADMAP.md
+
+SEO — Add meta tags and Open Graph data for baker profile pages. Lets make a plan to implement this.
+
+```
+
+Frontier model (Gemini 3.1 Pro) response:
+
+```
+
+Here is a plan to implement SEO meta tags and Open Graph data for baker profile pages.
+
+Plan: Backend SSR & Open Graph for Baker Profile
+Currently, the baker profile page (frontend/src/routes/[slug]/+page.svelte) fetches baker data client-side in onMount. Social media crawlers and search engine bots generally do not execute JavaScript, meaning they see a blank page without metadata. To add effective SEO and Open Graph data, we need to load the primary baker metadata during SvelteKit's Server-Side Rendering (SSR).
+
+Steps
+
+Extract Baker Fetch to SSR: Create frontend/src/routes/[slug]/+page.ts with a load function that runs during SSR. It will fetch(/api/bakers/${params.slug}). To preserve the custom branded "Not Found" UI, if the API returns 404, the load function will return { baker: null, notFound: true } instead of throwing a generic SvelteKit error.
+Refactor Page State Initialization: Update frontend/src/routes/[slug]/+page.svelte to accept let { data } = $props(); and synchronize the local states baker and notFound with data. Remove the local fetch('/api/bakers/{slug}') from onMount.
+Keep Secondary Payloads Client-Side: Keep the /products and /calendar/availability fetch routines inside onMount to ensure fast Time To First Byte (TTFB) and prevent blocking SSR.
+Implement Extended Meta Tags: Expand the existing <svelte:head> in frontend/src/routes/[slug]/+page.svelte to include full Open Graph (og:title, og:description, og:image, og:url) and Twitter Card equivalents. Use $page.url.href for canonical URLs and baker.logo_url conditionally if it exists.
+Relevant files
+
+frontend/src/routes/[slug]/+page.ts — (New) Universal load function for /api/bakers/{slug}.
+frontend/src/routes/[slug]/+page.svelte — Consume data.baker, clean up onMount, and add the new <meta> elements into <svelte:head>.
+Verification
+
+Run local dev server (make dev).
+Load a baker profile using curl -s http://localhost:5173/demo-baker and verify that the HTML response source code straight from the server contains the populated <title> and Open Graph <meta> tags.
+E2E Test: Run make test:e2e to verify no client-side behavior broke during refactoring of onMount.
+Further Considerations
+
+Is there an intention to provide SEO tags to other surfaced pages (e.g. the static landing page)? We could add standard tags for the root / page simultaneously if you prefer!
+for the root / page simultaneously if it requires better previews when shared.
+Let me know if this looks good to you or if you want changes on anything!
+
+```
+
+Local model (Gemma 4 31B pm-tuned model) response:
+
+```
+
+To implement SEO and Open Graph (OG) data for baker profile pages, we need to ensure that when a baker's shop URL (cakemate.fi/{slug}) is shared on social media or indexed by search engines, it displays a professional preview (title, description, and image) tailored to that specific baker.
+
+Since the frontend is built with SvelteKit, we can leverage its SSR (Server-Side Rendering) capabilities to inject these tags dynamically based on the baker's profile data.
+
+Proposed Implementation Plan
+
+1. Backend: SEO Metadata API
+   We need to ensure the backend provides the necessary fields for SEO.
+
+Verify existing fields: Check if the baker profile already contains description, meta_title, or profile_image_url.
+Enhancement: If missing, add optional SEO-specific fields to the baker profile (e.g., seo_title, seo_description) so bakers can customize how they appear in Google, rather than just using their "About Me" text. 2. Frontend: Dynamic Meta Tag Injection
+In SvelteKit, we will use the <svelte:head> tag within the public profile route to inject metadata.
+
+Route: src/routes/[slug]/+page.server.ts (to fetch data) and +page.svelte (to render tags).
+Logic:
+Title: [Bakery Name] | Custom Cakes in [City]
+Description: Use the baker's short bio or a generated summary.
+OG Image: Use the baker's logo or a default "CakeMate" branded image if none is provided.
+Canonical URL: Set the canonical link to the baker's specific slug. 3. Open Graph & Twitter Card Specifics
+We will implement the following tags:
+
+og:title, og:description, og:image, og:url, og:type (website).
+twitter:card (summary_large_image), twitter:title, twitter:description, twitter:image. 4. Automation (The "SEO Automation" Nice-to-Have)
+As mentioned in the "Nice To Have" section of the roadmap, we can automate the generation of these tags:
+
+Template-based generation: If the baker hasn't provided a custom SEO description, generate one: "Order custom cakes from [Bakery Name] in [City]. Professional cakes for weddings, birthdays, and more."
+Technical Execution Steps
+| Step | Task | File/Area | | :--- | :--- | :--- | | 1 | Audit baker model for SEO fields | internal/baker/ | | 2 | Update Backend API to return SEO metadata | internal/baker/handler.go | | 3 | Implement <svelte:head> logic in SvelteKit | frontend/src/routes/[slug]/+page.svelte | | 4 | Create a helper for "Automated SEO" text generation | frontend/src/lib/seo-utils.ts | | 5 | Verify with opengraph.xyz or similar tools | Testing |
+
+Next Steps
+To start this, I need to see the current baker profile data structure and the existing public profile route in the frontend.
+
+Would you like me to start by exploring the backend baker model and the frontend profile route?
+
+```
+
+In this task, the codebase owner actually prefers the local model's answer, as it's more to the point. It also has picked up extra context from the ROADMAP.md (from the "Nice to have" section), for the scoping of the feature.
+
+Next I made separate git branches for the local model and frontier model.
+
+```
+
+git checkout -b gemma4-dev-1
+
+```
+
+Frontier model (Gemini 3.1 Pro):
+
+```
+
+git checkout -b frontier-dev-1
+
+```
+
+This way it would be possible to compare the results of the models more concretely, since they would be working on the same codebase.
+
+## 11.5.2026
+
+Next I did a simple linter fix request for both models. This time I did not give the files as explicit context, but left for the models to figure out.
+
+Prompt:
+
+```
+
+/app/src/lib/components/dashboard/OnboardingProfileStep.svelte
+
+55:6 error 'calendar_capacity_scope' in 'profile' is an unused property svelte/no-unused-props
+
+/app/src/lib/components/dashboard/StorefrontControls.svelte
+
+15:6 error Prefer using writable $derived instead of $state and $effect svelte/prefer-writable-derived
+
+✖ 2 problems (2 errors, 0 warnings)
+
+Could you fix these?
+
+```
+
+Gemma 4 31B dev-tuned model response was subpar, it did not solve for the linter errors and left "// ... existing code ..." placeholders in the code. Also 2 small linter errors were converted to 10 failing tests.
+
+The frontier model (Gemini 3.1 Pro) solved the linter errors and left the code clean and without placeholders. This anecdote serves as an example that even a small, tightly scoped task might be a tall order for a local model.
+
+Next I tried to give the local model some more understanding with the "/init"-command Continue.dev offers. Which is basicly a hard coded prompt:
+
+```
+
+You are an expert development assistant. Your task is to create a comprehensive CONTINUE.md project guide for the user's codebase to help them and their team better understand and work with the project. ## Step 1: Check Required Tools First, verify that you have access to the necessary tools: - file_glob_search: To discover project files - read_file: To analyze file contents - ls: To explore directory structure - create_new_file: To generate the CONTINUE.md file If any of these tools are unavailable, inform the user that they need to activate them and enable "Agent Mode" in Continue before proceeding. ## Step 2: Project Analysis Analyze the project structure and key files to understand: - The programming languages and frameworks used - The overall architecture and organization - Key components and their responsibilities - Important configuration files - Build/deployment system ## Step 3: Generate CONTINUE.md Create a comprehensive CONTINUE.md file in the .continue/rules/ directory with the following sections: 1. **Project Overview** - Brief description of the project's purpose - Key technologies used - High-level architecture 2. **Getting Started** - Prerequisites (required software, dependencies) - Installation instructions - Basic usage examples - Running tests 3. **Project Structure** - Overview of main directories and their purpose - Key files and their roles - Important configuration files 4. **Development Workflow** - Coding standards or conventions - Testing approach - Build and deployment process - Contribution guidelines 5. **Key Concepts** - Domain-specific terminology - Core abstractions - Design patterns used 6. **Common Tasks** - Step-by-step guides for frequent development tasks - Examples of common operations 7. **Troubleshooting** - Common issues and their solutions - Debugging tips 8. **References** - Links to relevant documentation - Important resources Make sure your analysis is thorough but concise. Focus on information that would be most helpful to developers working on the project. If certain information isn't available from the codebase, make reasonable assumptions but mark these sections as needing verification. ## Step 4: Finalize After creating the .continue/rules/CONTINUE.md file, provide a summary of what you've created and remind the user to: 1. Review and edit the file as needed 2. Commit it to their repository to share with their team 3. Explain that Continue will automatically load this file into context when working with the project Also inform the user that they can create additional rules.md files in subdirectories for more specific documentation related to those components.
+
+```
+
+After the "/init"-command, I tried the same linter fix request again:
+
+```
+
+/app/src/lib/components/dashboard/OnboardingProfileStep.svelte
+
+55:6 error 'calendar_capacity_scope' in 'profile' is an unused property svelte/no-unused-props
+
+/app/src/lib/components/dashboard/StorefrontControls.svelte
+
+15:6 error Prefer using writable $derived instead of $state and $effect svelte/prefer-writable-derived
+
+✖ 2 problems (2 errors, 0 warnings)
+
+Could you fix these?
+
+```
+
+That ended in the model omitting the contents of one the files effectively and making somewhat sane changes to the other file. Looking at the changes it looks like the model messed up in the changes in such a way that it mixed the edits for the two files together. I did a little manual editing for the file that was less mangled, and that ended up passing the linting.
+
+## 12.5.2026
+
+The fact that the local model mangles code for multiple files is concerning, since modern agentic flow is essential for speed of iteration, developers shouldn't need to worry about manually babysitting the context size or file sizes. Next I wanted to try out single file editing, if that would produce useful results, ie. editing the linter errors one by one.
+
+Prompt used:
+
+```
+
+/app/src/lib/components/dashboard/OnboardingProfileStep.svelte
+
+55:6 error 'calendar_capacity_scope' in 'profile' is an unused property svelte/no-unused-props
+
+Fix this linter error.
+
+```
+
+Next I thought that maybe the local model tunings that were made were at fault for the poor performance. I questioned the modelfile assumptions and tweaked num_predict to -1 SOURCE HERE. Also did some research and changed the coding model to Qwen3 32b and tried the same editing task again with single file editing SOURCE HERE. Those tweaks resulting in a one shot fix for the linter error, so naturally the next step was to up the ante and try a two file edit request with these new model tunings.
+
+Turns out that that was a bad choice, since the model botched the request in a similar way as before. So then I resorted to modifying the model tuning in the system prompt.
+
+Modelfile for product manager agent:
+
+```
+
+FROM gemma4:31b
+
+PARAMETER temperature 0.3
+PARAMETER top_p 0.95
+PARAMETER num_ctx 49152
+PARAMETER num_predict -1
+
+SYSTEM """
+You are a pragmatic, high-output Product Manager for a niche e-commerce platform built with Go (backend) and SvelteKit (frontend).
+
+CRITICAL RULES:
+
+- ALWAYS read the actual files before answering questions about project state. Never guess from summaries or partial grep output.
+- When checking completion status, look at the actual checkboxes: [x] = done, [ ] = pending.
+- If a tool fails to read a file (e.g. too large), try reading it in sections rather than guessing.
+- Be direct, decisive, and action-oriented. No fluff.
+
+When I describe a feature or problem, respond with:
+
+1. One-sentence goal
+2. Recommended approach (fastest viable path)
+3. Key user stories + acceptance criteria
+4. Technical considerations (Go/Svelte specific)
+5. Potential risks & mitigation
+
+Always prioritize speed-to-value and business impact.
+Break down features into small, shippable pieces.
+"""
+
+```
+
+Modelfile for developer agent:
+
+```
+
+FROM qwen3:32b
+
+PARAMETER temperature 0.2
+PARAMETER top_p 0.9
+PARAMETER num_ctx 49152
+PARAMETER num_predict -1
+
+SYSTEM """
+You are an expert full-stack developer specialized in Go & SvelteKit. /no_think
+
+ABSOLUTE RULES — never violate these:
+
+- NEVER use placeholder comments like "// ... existing code ...", "// rest of component", or similar. Every line of the file must be present in your output.
+- When editing a file, output the COMPLETE file contents with your changes applied.
+- Handle ONE FILE AT A TIME. Finish all changes for one file completely before moving to the next file.
+- If asked to fix multiple files, present each file as a separate, clearly labeled code block.
+
+Workflow:
+
+1. Read the file(s) involved using available tools — never guess contents.
+2. Identify the minimal change needed.
+3. Output the full file with only the necessary lines changed.
+4. If multiple files are involved, repeat steps 1-3 for each file sequentially.
+
+Tech stack context: Go backend, SvelteKit frontend, PostgreSQL, Stripe payments.
+"""
+
+````
+
+Then I modified the the continuerc.json to also use the longer context size:
+
+```json
+"models": [
+    {
+      "title": "DEV Go+Svelte repo",
+      "provider": "ollama",
+      "model": "dev-gosvelte",
+      "contextLength": 49152
+    },
+    {
+      "title": "PM Go+Svelte repo",
+      "provider": "ollama",
+      "model": "pm-gosvelte",
+      "contextLength": 49152
+    }
+]
+````
+
+That still produced mangled output in files, having a "</think>" as the new content in one of the files. Next I modified the continuers.json to have a completion option:
+
+```json
+"models": [
+    {
+      "title": "DEV Go+Svelte repo",
+      "provider": "ollama",
+      "model": "dev-gosvelte",
+      "contextLength": 49152,
+      "defaultCompletionOptions": {
+        "think": false
+      }
+    },
+    {
+      "title": "PM Go+Svelte repo",
+      "provider": "ollama",
+      "model": "pm-gosvelte",
+      "contextLength": 49152,
+      "defaultCompletionOptions": {
+        "think": false
+      }
+    }
+]
+```
+
+This setting tells Ollama at the API level to suppress thinking mode entirely, so the <think> blocks never get generated in the first place SOURCE HERE. This time around the 2 file edit took more than 3 hours and still failed.
+
+## 13.5.2026
+
+I looked into the Continue's settings and it had read_tool as false, so I changed that to true. Model still failed to edit the two files simultaneously, so I tried plan-mode for this next. This then resulted in the model trying to mod a wrong file that was open in the editor. After that the next help I gave to the model was to explicitly tell that the path is not from repository root, but from a test report.
+
+```
+/app/src/lib/components/dashboard/OnboardingProfileStep.svelte
+
+  55:6  error  'calendar_capacity_scope' in 'profile' is an unused property  svelte/no-unused-props
+
+/app/src/lib/components/dashboard/StorefrontControls.svelte
+
+  15:6  error  Prefer using writable $derived instead of $state and $effect  svelte/prefer-writable-derived
+
+✖ 2 problems (2 errors, 0 warnings)
+
+Could you fix these? Be mindful of the path not being correct from repo root, as this an error message from 'make test'.
+```
+
+Plan-mode agent realized correctly, that the file path was indeed not from repository root, which should be given, since it was given in the prompt anyway.
+
+Model's answer looked promising:
+
+```
+Now that we've located the correct files, let's proceed to fix the issues.
+
+✅ Fix for frontend/src/lib/components/dashboard/OnboardingProfileStep.svelte
+Issue:
+The calendar_capacity_scope property in the profile object is unused.
+
+Fix:
+Remove or comment out the unused property.
+
+✅ Fix for frontend/src/lib/components/dashboard/StorefrontControls.svelte
+Issue:
+Prefer using $derived over $state and $effect.
+
+Fix:
+Refactor the code to use $derived for derived values.
+
+Would you like me to:
+
+Show the corrected code for both files?
+Provide a diff of the changes?
+Or would you prefer to switch to Agent mode to apply the changes directly?
+```
+
+So then, agent mode was applied and the result was the agent being stuck on the editing task for such a time, that it would be highly inconvenient way for a real world use case, since manual edits for simple linter fixes are quite fast to do by yourself compared to this way of spoonfeeding and babysitting the agent.
+
+Then I decided to switch tactics and request only fixes one file at a time and used a stock Qwen model without any special tunings. Prompt used container only the relevant error message:
+
+```
+/app/src/lib/components/dashboard/OnboardingProfileStep.svelte
+
+  55:6  error  'calendar_capacity_scope' in 'profile' is an unused property  svelte/no-unused-props
+```
+
+Model failed misarably to find the file, since my prompt was not explicit on the path. Then I added the file's path to the prompt as context to try and get the model to find the file it's supposed to edit.
+
+```
+Here you go, this is the absolute path:
+
+/path/to/repo_root/frontend/src/lib/components/dashboard/OnboardingProfileStep.svelte
+```
+
+This did not end well, so I resorted to a separate applying model via the config:
+
+```
+{
+  "mergeBehavior": "overwrite",
+  "models": [
+    {
+      "title": "DEV Go+Svelte repo",
+      "provider": "ollama",
+      "model": "dev-gosvelte",
+      "contextLength": 49152,
+      "defaultCompletionOptions": {
+        "think": false
+      },
+      "roles": ["chat"]
+    },
+    {
+      "title": "PM Go+Svelte repo",
+      "provider": "ollama",
+      "model": "pm-gosvelte",
+      "contextLength": 49152,
+      "defaultCompletionOptions": {
+        "think": false
+      },
+      "roles": ["chat"]
+    },
+    {
+      "title": "Gemma 4 (31B) repo",
+      "provider": "ollama",
+      "model": "gemma4:31b",
+      "contextLength": 49152,
+      "defaultCompletionOptions": {
+        "think": false
+      },
+      "roles": ["chat"]
+    },
+    {
+      "title": "qwen3:32b repo",
+      "provider": "ollama",
+      "model": "qwen3:32b",
+      "roles": ["chat"]
+    },
+    {
+      "title": "Qwen2.5-Coder 7B (Apply)",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "roles": ["edit", "apply"]
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Qwen2.5-Coder (7B) repo",
+    "provider": "ollama",
+    "model": "qwen2.5-coder:7b"
+  },
+  "embeddingsProvider": {
+    "provider": "ollama",
+    "model": "qwen3-embedding-4b"
+  }
+}
+```
+
+Workflow was this:
+
+1. Use larger model to plan
+2. Use smaller model to apply changes
+
+Model was unable to locate the file independently, so I gave the absolute path as context. Somehow the Continue.dev plugin has lost it's capability to edit the files directly, so I resorted to using the models directly in the VSC's native AI chat-interface.
+
+## 14.5.2026
+
+The change to VSC's native AI-chat interface did wonders and the local model did a simple linter fix for one file in under a minute. So naturally the next test was to test it on 2 linter errors simultaniously, giving the context in a prompt as the error messages (emulating developer workflow):
+
+```
+/app/src/lib/components/dashboard/OnboardingProfileStep.svelte
+  55:6  error  'calendar_capacity_scope' in 'profile' is an unused property  svelte/no-unused-props
+
+/app/src/lib/components/dashboard/StorefrontControls.svelte
+  15:6  error  Prefer using writable $derived instead of $state and $effect  svelte/prefer-writable-derived
+
+✖ 2 problems (2 errors, 0 warnings)
+```
+
+Also turned off device connection to internet to be sure we're running on local inference compute, since that's one the key benefits of local models - your data is your data SOURCE HERE.
+
+This worked better than Continue.dev plugin, but it still did not have success with the paths in a strange way, since it was able to locate 1 of the files correctly, but not the other one. So maybe we do need absolute paths for simple linter fixes? I tried the same prompt again to see if there would be a difference in outcome, as models are not deterministic SOURCE HERE.
+
+I was positively surprised when it worked perfectly this time around, and the linter issues were fixed.
+
+```
+The linting issues have been resolved:
+
+Unused Property
+Removed calendar_capacity_scope from the OnboardingProfile type in OnboardingProfileStep.svelte with a comment explaining the change.
+
+Svelte Best Practice
+Replaced the $state + $effect pattern with $derived for liveStorefrontEnabled in StorefrontControls.svelte, improving reactivity and code clarity.
+
+Both changes follow Svelte 5 best practices and address the reported errors.
+```
+
+The changes the model made to the files were minimal and correct, so this was a success and something that could actually provide value, since this could be left running on the background while doing other tasks or taking a break and fix mundane issues.
+
+The next challenge for the model was a E2E-tests that are failing. Currently the repository has 10 failing tests, so as a benchmark, the first test was to test out a frontier model for a one-shot completion of said tests. E2E-tests are more complex, since they have more stuff going on than simple linter fixes.
+
+Prompt included only the test output in raw text for Gemini 3.1 Pro:
+
+```
+10:16:25 AM [vite] (client) Pre-transform error: src/lib/components/dashboard/StorefrontControls.svelte:115:16 Can only bind to state or props
+https://svelte.dev/e/bind_invalid_value
+  Plugin: vite-plugin-svelte:compile
+  File: src/lib/components/dashboard/StorefrontControls.svelte:115:16
+   113 |          type="text"
+   114 |          class="input"
+   115 |          bind:value={liveStorefrontMFACode}
+                                                   ^
+   116 |          autocomplete="one-time-code"
+   117 |          placeholder="6-digit TOTP or recovery code"
+10:16:25 AM [vite] Internal server error: src/lib/components/dashboard/StorefrontControls.svelte:115:16 Can only bind to state or props
+https://svelte.dev/e/bind_invalid_value
+  Plugin: vite-plugin-svelte:compile
+  File: src/lib/components/dashboard/StorefrontControls.svelte:115:16
+   113 |          type="text"
+   114 |          class="input"
+   115 |          bind:value={liveStorefrontMFACode}
+                                                   ^
+   116 |          autocomplete="one-time-code"
+   117 |          placeholder="6-digit TOTP or recovery code"
+ ❯  client (chromium)  src/lib/security/session-security-prompts.svelte.spec.ts (0 test)
+ ✓  client (chromium)  src/lib/vitest-examples/Welcome.svelte.spec.ts (1 test) 8ms
+ ✓  client (chromium)  src/lib/components/dashboard/DashboardStatsGrid.svelte.spec.ts (1 test) 13ms
+ ✓  client (chromium)  src/lib/components/orders/OrderSummaryPanel.svelte.spec.ts (4 tests) 14ms
+ ✓  client (chromium)  src/lib/dashboard/analytics-overview-page.svelte.spec.ts (2 tests) 18ms
+ ✓  client (chromium)  src/lib/dashboard/analytics-revenue-page.svelte.spec.ts (1 test) 24ms
+ ✓  server  src/lib/platform-config.spec.ts (8 tests) 4ms
+ ✓  client (chromium)  src/lib/dashboard/dashboard-route-auth.svelte.spec.ts (4 tests) 14ms
+ ✓  server  src/lib/niche-lexicon.spec.ts (5 tests) 4ms
+ ✓  client (chromium)  src/lib/niche-route-copy.svelte.spec.ts (6 tests) 229ms
+ ❯  client (chromium)  src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts (3 tests | 2 failed) 16277ms
+     ✓ renders capacity overlay signals and risk labels 64ms
+     × prefers query params and persists funnel selection to URL and localStorage 1273ms
+     × supports presets and state multiselect for local calendar filtering 14939ms
+ ❯  client (chromium)  src/lib/proposal-quote-change.svelte.spec.ts (2 tests | 2 failed) 29815ms
+     × blocks quantities below 1 before sending the request 14912ms
+     × submits changed quantities when all quantities are valid 14902ms
+ ❯  client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts (11 tests | 6 failed) 90155ms
+     × renders paid, in-production, and ready orders by pickup day 14988ms
+     × applies mode, range, and state filters locally without extra refetch 14994ms
+     × supports list queue, search, and date-range filtering for ops triage 14963ms
+     × sorts list rows by amount and customer 14951ms
+     × shows partial and full payment labels in list amount column 14996ms
+     ✓ renders desktop calendar in 7-day rows without horizontal scroll 53ms
+     ✓ aligns calendar columns so the first day is Monday 52ms
+     ✓ stacks mobile calendar vertically without side scrolling 54ms
+     × shows requested and changes-requested states with needs-reply indicators 14995ms
+     ✓ restores production state filters from localStorage 56ms
+     ✓ restores production view preference from localStorage 53ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   client (chromium)  src/lib/security/session-security-prompts.svelte.spec.ts [ src/lib/security/session-security-prompts.svelte.spec.ts ]
+Error: Failed to import test file /app/src/lib/security/session-security-prompts.svelte.spec.ts
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/app/src/lib/security/session-security-prompts.svelte.spec.ts?import&browserv=1778753784740
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   client (chromium)  src/lib/proposal-quote-change.svelte.spec.ts:98:2 > Proposal quantity change requests > blocks quantities below 1 before sending the request
+TimeoutError: locator.fill: Timeout 14630ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('spinbutton').first()
+
+ ❯ src/lib/proposal-quote-change.svelte.spec.ts:118:45
+    116|
+    117|   await page.getByRole('button', { name: 'Request changes instead' }).click();
+    118|   await page.getByRole('spinbutton').first().fill('0');
+       |                                             ^
+    119|   await page.getByRole('button', { name: 'Send change request' }).click();
+    120|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL   client (chromium)  src/lib/proposal-quote-change.svelte.spec.ts:127:2 > Proposal quantity change requests > submits changed quantities when all quantities are valid
+TimeoutError: locator.fill: Timeout 14854ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('spinbutton').first()
+
+ ❯ src/lib/proposal-quote-change.svelte.spec.ts:175:45
+    173|
+    174|   await page.getByRole('button', { name: 'Request changes instead' }).click();
+    175|   await page.getByRole('spinbutton').first().fill('2');
+       |                                             ^
+    176|   await page.getByRole('button', { name: 'Send change request' }).click();
+    177|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:137:2 > FutureCalendarFunnel.svelte > prefers query params and persists funnel selection to URL and localStorage
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:171:21
+    169|   await page.getByRole('button', { name: 'Live' }).click();
+    170|   await vi.waitFor(() => {
+    171|    expect(fetchMock).toHaveBeenCalledTimes(2);
+       |                     ^
+    172|   });
+    173|   const secondRequestURL = inputToURL(fetchMock.mock.calls[1][0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:189:2 > FutureCalendarFunnel.svelte > supports presets and state multiselect for local calendar filtering
+Error: expect(element).not.toBeChecked()
+
+Received element is checked:
+  <input
+  class="svelte-91677o"
+  type="checkbox"
+/>
+ ❯ src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:222:33
+    220|   await expect.element(requested).toBeChecked();
+    221|   await expect.element(quoted).toBeChecked();
+    222|   await expect.element(paid).not.toBeChecked();
+       |                                 ^
+    223|   await expect.element(inProduction).not.toBeChecked();
+    224|   await expect.element(ready).not.toBeChecked();
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:202:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:223:2 > ProductionCalendarBoard.svelte > renders paid, in-production, and ready orders by pickup day
+VitestBrowserElementError: Cannot find element with locator: getByRole('heading', { name: 'Order Details' })
+
+<body>
+
+
+
+
+  <vite-error-overlay>
+    #shadow-root
+      <div
+        class="backdrop"
+        part="backdrop"
+      >
+        <div … />
+        <style … />
+      </div>
+  </vite-error-overlay>
+  <div>
+    <div
+      class="dashboard-section"
+    >
+      <div … />
+
+      <div … />
+      <!---->
+
+      <div … />
+
+      <!---->
+
+      <!---->
+    </div>
+
+  </div>
+</body>...
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:381:77
+    379|    .first()
+    380|    .click();
+    381|   await expect.element(page.getByRole('heading', { name: 'Order Details' })).toBeInTheDocument();
+       |                                                                             ^
+    382|   await expect
+    383|    .element(page.getByText('Order #11111111 - LIVE ORDER - Fully Paid ✓'))
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:323:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:408:2 > ProductionCalendarBoard.svelte > applies mode, range, and state filters locally without extra refetch
+VitestBrowserElementError: Cannot find element with locator: getByText('Demo Ready In Range (Ready for Pickup)')
+
+<body>
+
+
+
+
+  <vite-error-overlay>
+    #shadow-root
+      <div
+        class="backdrop"
+        part="backdrop"
+      >
+        <div … />
+        <style … />
+      </div>
+  </vite-error-overlay>
+  <div>
+    <div
+      class="dashboard-section"
+    >
+      <div … />
+
+      <div … />
+      <!---->
+
+      <div … />
+
+      <!---->
+
+      <!---->
+    </div>
+
+  </div>
+</body>...
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:470:4
+    468|   await expect
+    469|    .element(page.getByText('Demo Ready In Range (Ready for Pickup)'))
+    470|    .toBeInTheDocument();
+       |    ^
+    471|   await expect.element(page.getByText('Live Paid In Range')).not.toBeInTheDocument();
+    472|
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:397:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:548:2 > ProductionCalendarBoard.svelte > supports list queue, search, and date-range filtering for ops triage
+VitestBrowserElementError: Cannot find element with locator: getByLabel('Production calendar list view')
+
+<body>
+
+
+
+
+  <vite-error-overlay>
+    #shadow-root
+      <div
+        class="backdrop"
+        part="backdrop"
+      >
+        <div … />
+        <style … />
+      </div>
+  </vite-error-overlay>
+  <div>
+    <div
+      class="dashboard-section"
+    >
+      <div … />
+
+      <div … />
+      <!---->
+
+      <div … />
+
+      <!---->
+
+      <!---->
+    </div>
+
+  </div>
+</body>...
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:584:77
+    582|
+    583|   await page.getByRole('button', { name: 'List' }).click();
+    584|   await expect.element(page.getByLabelText('Production calendar list view')).toBeInTheDocument();
+       |                                                                             ^
+    585|
+    586|   await page.getByLabelText('List queue filter').selectOptions('needs_quote');
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:485:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:609:2 > ProductionCalendarBoard.svelte > sorts list rows by amount and customer
+VitestBrowserElementError: Cannot find element with locator: getByLabel('Production calendar list view')
+
+<body>
+
+
+
+
+  <vite-error-overlay>
+    #shadow-root
+      <div
+        class="backdrop"
+        part="backdrop"
+      >
+        <div … />
+        <style … />
+      </div>
+  </vite-error-overlay>
+  <div>
+    <div
+      class="dashboard-section"
+    >
+      <div … />
+
+      <div … />
+      <!---->
+
+      <div … />
+
+      <!---->
+
+      <!---->
+    </div>
+
+  </div>
+</body>...
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:641:77
+    639|
+    640|   await page.getByRole('button', { name: 'List' }).click();
+    641|   await expect.element(page.getByLabelText('Production calendar list view')).toBeInTheDocument();
+       |                                                                             ^
+    642|
+    643|   await page.getByRole('button', { name: /Net/i }).click();
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:536:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:662:2 > ProductionCalendarBoard.svelte > shows partial and full payment labels in list amount column
+VitestBrowserElementError: Cannot find element with locator: getByLabel('Production calendar list view')
+
+<body>
+
+
+
+
+  <vite-error-overlay>
+    #shadow-root
+      <div
+        class="backdrop"
+        part="backdrop"
+      >
+        <div … />
+        <style … />
+      </div>
+  </vite-error-overlay>
+  <div>
+    <div
+      class="dashboard-section"
+    >
+      <div … />
+
+      <div … />
+      <!---->
+
+      <div … />
+
+      <!---->
+
+      <!---->
+    </div>
+
+  </div>
+</body>...
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:688:77
+    686|
+    687|   await page.getByRole('button', { name: 'List' }).click();
+    688|   await expect.element(page.getByLabelText('Production calendar list view')).toBeInTheDocument();
+       |                                                                             ^
+    689|
+    690|   await expect.element(page.getByText('Partial (60,00 € paid)')).toBeInTheDocument();
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:580:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:782:2 > ProductionCalendarBoard.svelte > shows requested and changes-requested states with needs-reply indicators
+VitestBrowserElementError: Cannot find element with locator: getByText('Needs Reply Changes (Changes Requested)')
+
+<body>
+
+
+
+
+  <vite-error-overlay>
+    #shadow-root
+      <div
+        class="backdrop"
+        part="backdrop"
+      >
+        <div … />
+        <style … />
+      </div>
+  </vite-error-overlay>
+  <div>
+    <div
+      class="dashboard-section"
+    >
+      <div … />
+
+      <div … />
+      <!---->
+
+      <div … />
+
+      <!---->
+
+      <!---->
+    </div>
+
+  </div>
+</body>...
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:842:4
+    840|   await expect
+    841|    .element(page.getByText('Needs Reply Changes (Changes Requested)'))
+    842|    .toBeInTheDocument();
+       |    ^
+    843|   await expect.element(page.getByText('Quoted No Reply (Quote Sent)')).toBeInTheDocument();
+    844|   await expect.element(page.getByLabelText('Needs reply').first()).toBeInTheDocument();
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
+ ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:706:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+```
