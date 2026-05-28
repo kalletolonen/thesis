@@ -1436,12 +1436,6 @@ That means that we're pretty much already doing a best effort for the task.
 
 I feel like we're running out of things to try to improve upon, and my conclusion is that locally run quantized LLM's do have their place and use, but they can not be used as a substitute for frontier models. Main limitations being the context size and long duration reasoning. 
 
-
-
 ### Key observations
 
 The quality of the local model's work varies greatly. It's good enough on tightly scoped tasks, but fails on larger tasks. It still remains to be seen if local model can be quantisized to a point where they can compete with the larger models of today tomorrow. Probably a big part of that is extending the context via permanent memory with some sort a solution that will be available in the future. Currently my take is that local models can serve a purpose for small tasks, but do require an order of magnitude more babysitting than their commercial rivals. Having the models available in the Visual Studio Code Agents panel does reduce most of the friction of using some propriatry plugin, and it does actually seem to be working better than with the Continue.dev-tool that was used in this thesis as a comparison. The key benefit for developers is that the Agent-panel is readily available and something that developers are well accustomed to using. The switching and experimenting costs with different models and bolting on future models is thus quite negligible.
-
-```
-
-```
