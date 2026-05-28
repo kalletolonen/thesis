@@ -27,7 +27,7 @@ Set up the benchmarking pipeline with AI generated scripts:
 - Created `scripts/run_aider_benchmark.sh` for running the benchmark against Ollama.
 - Created `scripts/log_benchmark_to_mlflow.py` for logging results to MLflow for experiment tracking.
 
-**Important discovery: Ollama context window.** Ollama defaults to 2K context tokens, which is far too small for Aider. It silently drops context, leading to degraded results. Must set `OLLAMA_CONTEXT_LENGTH=8192` (or higher) before running benchmarks.
+**Important discovery: Ollama context window.** Ollama defaults to 2K context tokens, which is far too small for Aider. It silently drops context, leading to degraded results SOURCE HERE. Must set `OLLAMA_CONTEXT_LENGTH=8192` (or higher) before running benchmarks.
 
 ### What I learned
 
@@ -87,7 +87,7 @@ I also benchmarked the 7b model and the results were almost identical to the 32b
 
 ## 4.5.2026
 
-Time allocations have not been favourable to thesis work, and thus I've missed out on 2 months of time. Meanwhile models have been evolving, and same has happened to IDE's and agentic first workflow. I question the need for fine tuning at this point in time, as quantization will produce smaller versions of current frontier models, that are more than capable daily drivers for experienced developers. I run a risk of producing an outdated solution on, that's complex, brittle and not actually helpful, when compared to just locally running a quantized model that has great capabilities in a years time.
+Time allocations have not been favourable to thesis work, and thus I've missed out on 2 months of time. Meanwhile models have been evolving, and same has happened to IDE's and agentic first workflow. I question the need for fine tuning at this point in time, as quantization will produce smaller versions of current frontier models, that are more than capable daily drivers for experienced developers SOURCE HERE. I run a risk of producing an outdated solution on, that's complex, brittle and not actually helpful, when compared to just locally running a quantized model that has great capabilities in a years time.
 
 This represents a strategic pivot in the thesis: moving away from the effort-intensive process of fine-tuning a specific model for a narrow task, and instead focusing on the orchestration and deployment of high-performance quantized models. By leveraging quantization, I can utilize much larger, more capable frontier models (like Gemma 4) within the hardware constraints of a local machine, shifting the research focus from "model training" to "agentic workflow optimization."
 
@@ -697,7 +697,7 @@ Recommendation: Depending on whether you want to focus on Revenue/Onboarding or 
 
 ```
 
-So, naturally the next step was to ask the model again why it hallucated the baker photo uploads. And the result was that the summary in the ROADMAP.md was outdated, which is correct. This is quite common in my experience in software projects - the documentation is not up to date with the code. We should be able to fit a 56kb document into the context, as it's not that huge, so we added a line for each of our models in .continuerc.json.
+So, naturally the next step was to ask the model again why it hallucated the baker photo uploads. And the result was that the summary in the ROADMAP.md was outdated, which is correct. This is quite common in my experience in software projects - the documentation is not up to date with the code SOURCE HERE. We should be able to fit a 56kb document into the context, as it's not that huge, so we added a line for each of our models in .continuerc.json.
 
 ```
 
@@ -1438,4 +1438,4 @@ I feel like we're running out of things to try to improve upon, and my conclusio
 
 ### Key observations
 
-The quality of the local model's work varies greatly. It's good enough on tightly scoped tasks, but fails on larger tasks. It still remains to be seen if local model can be quantisized to a point where they can compete with the larger models of today tomorrow. Probably a big part of that is extending the context via permanent memory with some sort a solution that will be available in the future. Currently my take is that local models can serve a purpose for small tasks, but do require an order of magnitude more babysitting than their commercial rivals. Having the models available in the Visual Studio Code Agents panel does reduce most of the friction of using some propriatry plugin, and it does actually seem to be working better than with the Continue.dev-tool that was used in this thesis as a comparison. The key benefit for developers is that the Agent-panel is readily available and something that developers are well accustomed to using. The switching and experimenting costs with different models and bolting on future models is thus quite negligible.
+The quality of the local model's work varies greatly. It's good enough on tightly scoped tasks, but fails on larger tasks. It still remains to be seen if local model can be quantisized to a point where they can compete with the larger models of today tomorrow. Probably a big part of that is extending the context via permanent memory with some sort a solution that will be available in the future. Currently my take is that local models can serve a purpose for small tasks, but do require an order of magnitude more babysitting than their commercial rivals SOURCE HERE. Having the models available in the Visual Studio Code Agents panel does reduce most of the friction of using some propriatry plugin, and it does actually seem to be working better than with the Continue.dev-tool that was used in this thesis as a comparison. The key benefit for developers is that the Agent-panel is readily available and something that developers are well accustomed to using. The switching and experimenting costs with different models and bolting on future models is thus quite negligible SOURCE HERE.
