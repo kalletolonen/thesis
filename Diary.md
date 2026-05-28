@@ -1203,432 +1203,245 @@ Both changes follow Svelte 5 best practices and address the reported errors.
 
 The changes the model made to the files were minimal and correct, so this was a success and something that could actually provide value, since this could be left running on the background while doing other tasks or taking a break and fix mundane issues.
 
-The next challenge for the model was a E2E-tests that are failing. Currently the repository has 10 failing tests, so as a benchmark, the first test was to test out a frontier model for a one-shot completion of said tests. E2E-tests are more complex, since they have more stuff going on than simple linter fixes.
+### 15.5.2026
 
-Prompt included only the test output in raw text for Gemini 3.1 Pro:
+A more complex piece of work was to fix some end-to-end tests. The demonstration project has 1 failing tests, so that's a perfect candidate for the model to handle. Prompt was given as the error message:
 
 ```
-10:16:25 AM [vite] (client) Pre-transform error: src/lib/components/dashboard/StorefrontControls.svelte:115:16 Can only bind to state or props
-https://svelte.dev/e/bind_invalid_value
-  Plugin: vite-plugin-svelte:compile
-  File: src/lib/components/dashboard/StorefrontControls.svelte:115:16
-   113 |          type="text"
-   114 |          class="input"
-   115 |          bind:value={liveStorefrontMFACode}
-                                                   ^
-   116 |          autocomplete="one-time-code"
-   117 |          placeholder="6-digit TOTP or recovery code"
-10:16:25 AM [vite] Internal server error: src/lib/components/dashboard/StorefrontControls.svelte:115:16 Can only bind to state or props
-https://svelte.dev/e/bind_invalid_value
-  Plugin: vite-plugin-svelte:compile
-  File: src/lib/components/dashboard/StorefrontControls.svelte:115:16
-   113 |          type="text"
-   114 |          class="input"
-   115 |          bind:value={liveStorefrontMFACode}
-                                                   ^
-   116 |          autocomplete="one-time-code"
-   117 |          placeholder="6-digit TOTP or recovery code"
- ❯  client (chromium)  src/lib/security/session-security-prompts.svelte.spec.ts (0 test)
- ✓  client (chromium)  src/lib/vitest-examples/Welcome.svelte.spec.ts (1 test) 8ms
- ✓  client (chromium)  src/lib/components/dashboard/DashboardStatsGrid.svelte.spec.ts (1 test) 13ms
- ✓  client (chromium)  src/lib/components/orders/OrderSummaryPanel.svelte.spec.ts (4 tests) 14ms
- ✓  client (chromium)  src/lib/dashboard/analytics-overview-page.svelte.spec.ts (2 tests) 18ms
- ✓  client (chromium)  src/lib/dashboard/analytics-revenue-page.svelte.spec.ts (1 test) 24ms
- ✓  server  src/lib/platform-config.spec.ts (8 tests) 4ms
- ✓  client (chromium)  src/lib/dashboard/dashboard-route-auth.svelte.spec.ts (4 tests) 14ms
- ✓  server  src/lib/niche-lexicon.spec.ts (5 tests) 4ms
- ✓  client (chromium)  src/lib/niche-route-copy.svelte.spec.ts (6 tests) 229ms
- ❯  client (chromium)  src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts (3 tests | 2 failed) 16277ms
-     ✓ renders capacity overlay signals and risk labels 64ms
-     × prefers query params and persists funnel selection to URL and localStorage 1273ms
-     × supports presets and state multiselect for local calendar filtering 14939ms
- ❯  client (chromium)  src/lib/proposal-quote-change.svelte.spec.ts (2 tests | 2 failed) 29815ms
-     × blocks quantities below 1 before sending the request 14912ms
-     × submits changed quantities when all quantities are valid 14902ms
- ❯  client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts (11 tests | 6 failed) 90155ms
-     × renders paid, in-production, and ready orders by pickup day 14988ms
-     × applies mode, range, and state filters locally without extra refetch 14994ms
-     × supports list queue, search, and date-range filtering for ops triage 14963ms
-     × sorts list rows by amount and customer 14951ms
-     × shows partial and full payment labels in list amount column 14996ms
-     ✓ renders desktop calendar in 7-day rows without horizontal scroll 53ms
-     ✓ aligns calendar columns so the first day is Monday 52ms
-     ✓ stacks mobile calendar vertically without side scrolling 54ms
-     × shows requested and changes-requested states with needs-reply indicators 14995ms
-     ✓ restores production state filters from localStorage 56ms
-     ✓ restores production view preference from localStorage 53ms
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-
- FAIL   client (chromium)  src/lib/security/session-security-prompts.svelte.spec.ts [ src/lib/security/session-security-prompts.svelte.spec.ts ]
-Error: Failed to import test file /app/src/lib/security/session-security-prompts.svelte.spec.ts
-Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/app/src/lib/security/session-security-prompts.svelte.spec.ts?import&browserv=1778753784740
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
-
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-
- FAIL   client (chromium)  src/lib/proposal-quote-change.svelte.spec.ts:98:2 > Proposal quantity change requests > blocks quantities below 1 before sending the request
-TimeoutError: locator.fill: Timeout 14630ms exceeded.
-Call log:
-  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('spinbutton').first()
-
- ❯ src/lib/proposal-quote-change.svelte.spec.ts:118:45
-    116|
-    117|   await page.getByRole('button', { name: 'Request changes instead' }).click();
-    118|   await page.getByRole('spinbutton').first().fill('0');
-       |                                             ^
-    119|   await page.getByRole('button', { name: 'Send change request' }).click();
-    120|
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
-
- FAIL   client (chromium)  src/lib/proposal-quote-change.svelte.spec.ts:127:2 > Proposal quantity change requests > submits changed quantities when all quantities are valid
-TimeoutError: locator.fill: Timeout 14854ms exceeded.
-Call log:
-  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('spinbutton').first()
-
- ❯ src/lib/proposal-quote-change.svelte.spec.ts:175:45
-    173|
-    174|   await page.getByRole('button', { name: 'Request changes instead' }).click();
-    175|   await page.getByRole('spinbutton').first().fill('2');
-       |                                             ^
-    176|   await page.getByRole('button', { name: 'Send change request' }).click();
-    177|
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
-
- FAIL   client (chromium)  src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:137:2 > FutureCalendarFunnel.svelte > prefers query params and persists funnel selection to URL and localStorage
-AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
- ❯ src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:171:21
-    169|   await page.getByRole('button', { name: 'Live' }).click();
-    170|   await vi.waitFor(() => {
-    171|    expect(fetchMock).toHaveBeenCalledTimes(2);
-       |                     ^
-    172|   });
-    173|   const secondRequestURL = inputToURL(fetchMock.mock.calls[1][0]);
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
-
- FAIL   client (chromium)  src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:189:2 > FutureCalendarFunnel.svelte > supports presets and state multiselect for local calendar filtering
-Error: expect(element).not.toBeChecked()
+1) e2e/customer-journey.e2e.ts:124:2 › Customer Journey › full order flow: storefront → order form → submit → proposal → checkout › navigate to proposal and see quote breakdown
 
-Received element is checked:
-  <input
-  class="svelte-91677o"
-  type="checkbox"
-/>
- ❯ src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:222:33
-    220|   await expect.element(requested).toBeChecked();
-    221|   await expect.element(quoted).toBeChecked();
-    222|   await expect.element(paid).not.toBeChecked();
-       |                                 ^
-    223|   await expect.element(inProduction).not.toBeChecked();
-    224|   await expect.element(ready).not.toBeChecked();
-
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/FutureCalendarFunnel.svelte.spec.ts:202:4
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
-
- FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:223:2 > ProductionCalendarBoard.svelte > renders paid, in-production, and ready orders by pickup day
-VitestBrowserElementError: Cannot find element with locator: getByRole('heading', { name: 'Order Details' })
-
-<body>
+    Error: expect(locator).toBeVisible() failed
 
+    Locator: getByRole('heading', { name: /Proposal Details/i })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
 
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: /Proposal Details/i })
 
 
-  <vite-error-overlay>
-    #shadow-root
-      <div
-        class="backdrop"
-        part="backdrop"
-      >
-        <div … />
-        <style … />
-      </div>
-  </vite-error-overlay>
-  <div>
-    <div
-      class="dashboard-section"
-    >
-      <div … />
-
-      <div … />
-      <!---->
-
-      <div … />
+      312 |                     await page.goto(`/proposal/${proposalToken}`);
+      313 |
+    > 314 |                     await expect(page.getByRole('heading', { name: /Proposal Details/i })).toBeVisible();
+          |                                                                                            ^
+      315 |
+      316 |                     // Quote items visible
+      317 |                     await expect(page.getByText('Celebration Cake')).toBeVisible();
+        at /app/e2e/customer-journey.e2e.ts:314:75
+        at /app/e2e/customer-journey.e2e.ts:311:3
 
-      <!---->
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-customer-journey.e2e.t-86ad9-ubmit-→-proposal-→-checkout/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-      <!---->
-    </div>
+    Error Context: test-results/e2e-customer-journey.e2e.t-86ad9-ubmit-→-proposal-→-checkout/error-context.md
 
-  </div>
-</body>...
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:381:77
-    379|    .first()
-    380|    .click();
-    381|   await expect.element(page.getByRole('heading', { name: 'Order Details' })).toBeInTheDocument();
-       |                                                                             ^
-    382|   await expect
-    383|    .element(page.getByText('Order #11111111 - LIVE ORDER - Fully Paid ✓'))
-
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:323:4
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
-
- FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:408:2 > ProductionCalendarBoard.svelte > applies mode, range, and state filters locally without extra refetch
-VitestBrowserElementError: Cannot find element with locator: getByText('Demo Ready In Range (Ready for Pickup)')
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-<body>
+    Error: expect(locator).toBeVisible() failed
 
+    Locator: getByRole('heading', { name: /Proposal Details/i })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
 
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: /Proposal Details/i })
 
 
-  <vite-error-overlay>
-    #shadow-root
-      <div
-        class="backdrop"
-        part="backdrop"
-      >
-        <div … />
-        <style … />
-      </div>
-  </vite-error-overlay>
-  <div>
-    <div
-      class="dashboard-section"
-    >
-      <div … />
-
-      <div … />
-      <!---->
+      312 |                     await page.goto(`/proposal/${proposalToken}`);
+      313 |
+    > 314 |                     await expect(page.getByRole('heading', { name: /Proposal Details/i })).toBeVisible();
+          |                                                                                            ^
+      315 |
+      316 |                     // Quote items visible
+      317 |                     await expect(page.getByText('Celebration Cake')).toBeVisible();
+        at /app/e2e/customer-journey.e2e.ts:314:75
+        at /app/e2e/customer-journey.e2e.ts:311:3
 
-      <div … />
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-customer-journey.e2e.t-86ad9-ubmit-→-proposal-→-checkout-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-      <!---->
+    Error Context: test-results/e2e-customer-journey.e2e.t-86ad9-ubmit-→-proposal-→-checkout-retry1/error-context.md
 
-      <!---->
-    </div>
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-customer-journey.e2e.t-86ad9-ubmit-→-proposal-→-checkout-retry1/trace.zip
+    Usage:
 
-  </div>
-</body>...
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:470:4
-    468|   await expect
-    469|    .element(page.getByText('Demo Ready In Range (Ready for Pickup)'))
-    470|    .toBeInTheDocument();
-       |    ^
-    471|   await expect.element(page.getByText('Live Paid In Range')).not.toBeInTheDocument();
-    472|
-
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:397:4
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+        npx playwright show-trace test-results/e2e-customer-journey.e2e.t-86ad9-ubmit-→-proposal-→-checkout-retry1/trace.zip
 
- FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:548:2 > ProductionCalendarBoard.svelte > supports list queue, search, and date-range filtering for ops triage
-VitestBrowserElementError: Cannot find element with locator: getByLabel('Production calendar list view')
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-<body>
+  1 failed
+    e2e/customer-journey.e2e.ts:124:2 › Customer Journey › full order flow: storefront → order form → submit → proposal → checkout
+```
 
+So instead of a simple failing linter, there's actually the task of fixing the failing test, or updating logic for the UI.
 
+The model proposed a fix that would introduce a timeout for the test. The test still failed, so then I made a comparison with a frontier model (Gemini 3.1 Pro). The frontier model did the fix correctly on the 1st try.
 
+I wanted to see if a local model could fix the test on a second try. To my surprise, the local model did handle the fix.
 
-  <vite-error-overlay>
-    #shadow-root
-      <div
-        class="backdrop"
-        part="backdrop"
-      >
-        <div … />
-        <style … />
-      </div>
-  </vite-error-overlay>
-  <div>
-    <div
-      class="dashboard-section"
-    >
-      <div … />
+### 17.5.2026
 
-      <div … />
-      <!---->
+Next up was upping the stakes in a new feature implementation. The ROADMAP.md file was given as a context, and a prompt asked to start implementating the SEO-strategy.
 
-      <div … />
+```
+Make a plan for the - [ ] **SEO** — meta tags, Open Graph for baker profile pages roadmap task. We should start with the meta-tags.
+```
 
-      <!---->
+Local model did return a plan:
 
-      <!---->
-    </div>
+```
+Plan: Implement SEO Meta Tags for Baker Profile Pages
+TL;DR - Add dynamic meta tags to baker profile routes using SvelteKit's <meta> directives and load functions. Prioritize title/description tags first, then expand to Open Graph later.
 
-  </div>
-</body>...
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:584:77
-    582|
-    583|   await page.getByRole('button', { name: 'List' }).click();
-    584|   await expect.element(page.getByLabelText('Production calendar list view')).toBeInTheDocument();
-       |                                                                             ^
-    585|
-    586|   await page.getByLabelText('List queue filter').selectOptions('needs_quote');
+Steps
 
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:485:4
+Identify baker profile routes
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+Check src/routes/baker/[slug]/+page.svelte (primary candidate)
+Verify if src/routes/baker/+layout.svelte already contains shared meta configurations
+Audit existing meta tag patterns
 
- FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:609:2 > ProductionCalendarBoard.svelte > sorts list rows by amount and customer
-VitestBrowserElementError: Cannot find element with locator: getByLabel('Production calendar list view')
+Search for <meta> tags or use:page directives in:
+src/routes/baker/**/*.{svelte,js,ts}
+src/app.html (SvelteKit's root HTML template)
+Implement dynamic meta tags (depends on step 1-2)
 
-<body>
+In the identified route/component:
+Use export let data to receive baker profile data from +page.js/ts load function
+Add dynamic <meta name="description" content={data.baker.bio} />
+Set dynamic <title>{data.baker.name} | CakeMate</title>
+Validate data flow (depends on step 3)
 
+Confirm +page.ts load function returns baker object with required fields
+Add fallback values for missing data (e.g. data.baker.bio || 'Custom default description')
 
+Relevant files
 
+src/routes/baker/[slug]/+page.svelte — Likely primary implementation target
+src/routes/baker/[slug]/+page.ts — Data loading logic for dynamic baker profiles
+src/app.html — Root template for global meta configurations (if any)
+Verification
 
-  <vite-error-overlay>
-    #shadow-root
-      <div
-        class="backdrop"
-        part="backdrop"
-      >
-        <div … />
-        <style … />
-      </div>
-  </vite-error-overlay>
-  <div>
-    <div
-      class="dashboard-section"
-    >
-      <div … />
+Check rendered HTML output for:
+Dynamic <title> matching baker name
+Unique <meta name="description"> per profile
+Run npm run dev and manually test:
+Visit /baker/example-slug
+View page source to confirm meta tags are injected
+Use Screaming Frog to crawl local dev server and verify meta tag uniqueness
+Decisions
 
-      <div … />
-      <!---->
+Focus first on HTML meta tags (title/description) before Open Graph
+Use SvelteKit's built-in <meta> component instead of third-party libraries
+Exclude from src/routes/baker/+layout.svelte to avoid polluting shared layouts
+Further Considerations
 
-      <div … />
+Should we add canonical URLs to avoid duplicate content?
+Option A: Add <link rel="canonical" href={data.baker.canonicalUrl}>
+Option B: Defer until multi-language support (Phase 11)
+Would you like to proceed with this plan or refine any specific aspects?
+```
 
-      <!---->
+### 18.5.2026
 
-      <!---->
-    </div>
+The locally run model did sort of succeed in adding some fields to meta-tags, but failed to understand how the pages are generated. So this is something that can be used for smaller user stories too, where the changes needed are well known problems and not something that requires extensive understanding of the codebase.
 
-  </div>
-</body>...
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:641:77
-    639|
-    640|   await page.getByRole('button', { name: 'List' }).click();
-    641|   await expect.element(page.getByLabelText('Production calendar list view')).toBeInTheDocument();
-       |                                                                             ^
-    642|
-    643|   await page.getByRole('button', { name: /Net/i }).click();
+### 19.5.20226
 
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:536:4
+The next logical test was a comparison for the frontier model with the same prompt, and the results were similar to the local model. It did not succeed in understanding the page generation and did not one-shot the new feature. This meant that the prompt was too vague and neither model could produce the desired outcome.
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+The next test was to try and fix an UI bug, that does not allow for new product creation. The only clue we have is a phantom function call in the UI, and no further tips for the model. This kind of bug is useally quite easy to fix for a developer, as a you can do it by following the signal path. Somewhere along the path, when user click a button for new product creation, a missing function call is made and that somehow results in a failure.
 
- FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:662:2 > ProductionCalendarBoard.svelte > shows partial and full payment labels in list amount column
-VitestBrowserElementError: Cannot find element with locator: getByLabel('Production calendar list view')
+The prompt used (Agent mode with local LLM):
 
-<body>
+```
+Diagnose bug when user clicks 'Create Product':
 
+$.get(...).trim is not a function
+```
 
+Local model was not able to solve the bug in a one shot. As a control I tried to solve it manually, and that took me 5 minutes to solve. My strategy was to basically remove trim-functions for the problematic input, since it did not serve any sane purpose. Then I gave my insigths to the local model and spoon fed a bit the way to solve for this to see if it could manage it.
 
+```
+Diagnose bug when user clicks 'Create Product' on the product modal:
 
-  <vite-error-overlay>
-    #shadow-root
-      <div
-        class="backdrop"
-        part="backdrop"
-      >
-        <div … />
-        <style … />
-      </div>
-  </vite-error-overlay>
-  <div>
-    <div
-      class="dashboard-section"
-    >
-      <div … />
+$.get(...).trim is not a function
 
-      <div … />
-      <!---->
+You should see the signal path from the button click in the file to the saving.
+```
 
-      <div … />
+### 26.5.2026
 
-      <!---->
+Local model was not able to successfully fix the bug, even with some extra hints. The task took 30 minutes to produce the faulty response. The next step was to try out a frontier model for the same task as a comparative benchmark run.
 
-      <!---->
-    </div>
+The same prompt was given to Gemini 3.1 Pro. The frontier model one-shotted the task and produced a valid response in a matter of minutes.
 
-  </div>
-</body>...
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:688:77
-    686|
-    687|   await page.getByRole('button', { name: 'List' }).click();
-    688|   await expect.element(page.getByLabelText('Production calendar list view')).toBeInTheDocument();
-       |                                                                             ^
-    689|
-    690|   await expect.element(page.getByText('Partial (60,00 € paid)')).toBeInTheDocument();
+The model's response is telling:
 
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:580:4
+```
+I have diagnosed the bug where $.get(...).trim is not a function when the user clicks 'Create Product'.
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+The bug:
+Svelte 5 reactivity logic (via $state) with <input type="number"> elements passes parsed values as numbers to their bound variable (i.e. display_price and weightGramsInput), instead of maintaining them as strings. Consequently, when typeof variable === 'number' and the user clicks 'Create Product', trying to call the .trim() function from that number throws an error: ...trim is not a function.
 
- FAIL   client (chromium)  src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:782:2 > ProductionCalendarBoard.svelte > shows requested and changes-requested states with needs-reply indicators
-VitestBrowserElementError: Cannot find element with locator: getByText('Needs Reply Changes (Changes Requested)')
+The fix:
+I updated display_price, weightGramsInput and variant.price_display string evaluation inside handleSubmit to convert them into a string when checking with .trim(). Now it parses the display price input without causing any type mutation accordingly without any issue when submitting.
+```
 
-<body>
+The model realized that there was a type mismatch, as suggested by our comparison fix by the developer.
 
+Next I decided to try the fix on a local Nemotron model, as it's supposed to be better with vague prompts SOURCE HERE that developers do use, since humans tend to fill in the blanks SOURCE HERE. Nemotron received the same input prompt and produced a malformed response:
 
+```
+Sorry, your request failed. Please try again.
 
+Copilot Request id: c7df45c4-3b08-4eb9-a0cd-40a3195fa7ed
 
-  <vite-error-overlay>
-    #shadow-root
-      <div
-        class="backdrop"
-        part="backdrop"
-      >
-        <div … />
-        <style … />
-      </div>
-  </vite-error-overlay>
-  <div>
-    <div
-      class="dashboard-section"
-    >
-      <div … />
+Reason: Response contained no choices.: Error: Response contained no choices. at Jj._provideLanguageModelResponse (/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/copilot/dist/extension.js:1709:15836) at process.processTicksAndRejections (node:internal/process/task_queues:103:5) at async Jj.provideLanguageModelResponse (/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/copilot/dist/extension.js:1709:16839)
+```
 
-      <div … />
-      <!---->
+This told that the output was not something that Visual Studio Code's Agent functionality was expecting, so that made the Nemotron-model unusable for this use case SOURCE HERE.
 
-      <div … />
+Then, just to see if the customizations made by the ollama with the modelfile where actually hurting the performance characteristics of the model, I ran the same prompt on a barebones version of the Qwen 3 32 billion parameter model.
 
-      <!---->
+### 27.5.2026
 
-      <!---->
-    </div>
+The Qwen 3 non-customized version did not one shot the fix, but it not fare worse than the customized version. One thing to note was that the Visual Studio Code's Agent panel functionality does support context compression for locally run models too, and it does do it automatically SOURCE HERE. That is useful, since the context size is quite limited, as the memory at hand on a laptop is quite limited. Unfortunately for the usefulness for the lazy developer, the non-customized model wasn't able to fix the simple type issue with the level of prompting the frontier model just breezes trough. 
 
-  </div>
-</body>...
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:842:4
-    840|   await expect
-    841|    .element(page.getByText('Needs Reply Changes (Changes Requested)'))
-    842|    .toBeInTheDocument();
-       |    ^
-    843|   await expect.element(page.getByText('Quoted No Reply (Quote Sent)')).toBeInTheDocument();
-    844|   await expect.element(page.getByLabelText('Needs reply').first()).toBeInTheDocument();
+After these, frankly disapointing results, I asked a frontier model on how to improve the results from using a locally run LLM. The model's answer was not helping:
 
-Caused by: Error: Matcher did not succeed in time.
- ❯ Module.track_reactivity_loss node_modules/svelte/src/internal/client/reactivity/async.js:174:13
- ❯ src/lib/components/dashboard/ProductionCalendarBoard.svelte.spec.ts:706:4
+```
+100% Local Model Agentic Workflow
+A fully private, local-only workflow leveraging a specialized PM model for scoping and a Dev model for single-file execution, avoiding complex RAG and multi-file confusion.
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+Steps
+
+Local PM Scoping — Use the specialized local PM model (e.g., pm-gosvelte tuned Gemma 31B) to analyze requirements and determine the next action. Keep tracking files like ROADMAP.md completely DRY (no redundant summaries) to prevent local model hallucinations.
+Context Isolation — Extract the precise error message, test failure, or scoped feature request. Avoid broad workspace RAG, as local models struggle with huge, noisy contexts.
+Single-File Dev Execution — Feed the scoped task to the local developer model (e.g., dev-gosvelte tuned Qwen 32B). Crucially: always provide the absolute file path, and only request modifications for ONE file at a time.
+Native Application — Use VS Code's native AI chat interface for code generations instead of complex multi-agent plugins, as the Diary confirms it has a higher single-shot success rate for applying local model edits cleanly.
+No-Think Mode Enforcement — Ensure the underlying OLLAMA model config has <think> blocks suppressed (num_predict -1 and API completion settings) so the developer agent outputs pure, valid code without tangling reasoning into the source file.
+```
+
+That means that we're pretty much already doing a best effort for the task.
+
+### 28.5.2026
+
+I feel like we're running out of things to try to improve upon, and my conclusion is that locally run quantized LLM's do have their place and use, but they can not be used as a substitute for frontier models. Main limitations being the context size and long duration reasoning. 
+
+
+
+### Key observations
+
+The quality of the local model's work varies greatly. It's good enough on tightly scoped tasks, but fails on larger tasks. It still remains to be seen if local model can be quantisized to a point where they can compete with the larger models of today tomorrow. Probably a big part of that is extending the context via permanent memory with some sort a solution that will be available in the future. Currently my take is that local models can serve a purpose for small tasks, but do require an order of magnitude more babysitting than their commercial rivals. Having the models available in the Visual Studio Code Agents panel does reduce most of the friction of using some propriatry plugin, and it does actually seem to be working better than with the Continue.dev-tool that was used in this thesis as a comparison. The key benefit for developers is that the Agent-panel is readily available and something that developers are well accustomed to using. The switching and experimenting costs with different models and bolting on future models is thus quite negligible.
+
+```
+
 ```
