@@ -364,8 +364,6 @@ Always think step-by-step using chain-of-draft reasoning:
 
 Explain your reasoning clearly before suggesting code changes.
 """
-
-"""
 ```
 
 And the one for produc t manager:
@@ -989,7 +987,7 @@ Workflow:
 Tech stack context: Go backend, SvelteKit frontend, PostgreSQL, Stripe payments.
 """
 
-````
+```
 
 Then I modified the the continuerc.json to also use the longer context size:
 
@@ -1008,7 +1006,7 @@ Then I modified the the continuerc.json to also use the longer context size:
       "contextLength": 49152
     }
 ]
-````
+      ```
 
 That still produced mangled output in files, having a "</think>" as the new content in one of the files. Next I modified the continuers.json to have a completion option:
 
@@ -1439,3 +1437,17 @@ I feel like we're running out of things to try to improve upon, and my conclusio
 ### Key observations
 
 The quality of the local model's work varies greatly. It's good enough on tightly scoped tasks, but fails on larger tasks. It still remains to be seen if local model can be quantisized to a point where they can compete with the larger models of today tomorrow. Probably a big part of that is extending the context via permanent memory with some sort a solution that will be available in the future. Currently my take is that local models can serve a purpose for small tasks, but do require an order of magnitude more babysitting than their commercial rivals SOURCE HERE. Having the models available in the Visual Studio Code Agents panel does reduce most of the friction of using some propriatry plugin, and it does actually seem to be working better than with the Continue.dev-tool that was used in this thesis as a comparison. The key benefit for developers is that the Agent-panel is readily available and something that developers are well accustomed to using. The switching and experimenting costs with different models and bolting on future models is thus quite negligible SOURCE HERE.
+
+## Talk by Students article
+
+### Babysitting AI for locally run model in agentic workflows
+
+Modern software development was become interwoven with large language models. They've essentially replaced the debugging favorite of yesteryear, where developers would paste some obscure error message to Google and hope for a ready explanation to be available on Stackoverflow. Now the pasting is done to an agent and the agents are quite qualified to answer, explain and fix the vast majority of the error messages faced by developers. New feature implementation have usually, in my experience, vaguely formatted user stories that require deep understanding of the codebase and human relationships in the project context to be able to produce a solution that'll provide to the customer. Frontier models are today able to understand the codebase and they can provide immense amount of value by automating the code generation part of software development, this allows for developers to work on a codebase they have the proficiency to read but not write at a senior level.    
+
+When we're dealing with sensitive customer data, there's always a question of privacy. This makes for a dire choice - either you trust vendor promises of them not spying in on your or your end customer's data, and opting out of using LLM's for code generation tasks. There's also an another option that makes it possible to leverage the power of large language models, but does keep you data private by design, as it's runnable locally and doesn't even need an internet connection.
+
+The tradeoff that needs to be considered at the current performance levels is that locally run models do not have the horsepower and contexts sizes the frontier labs' bleeding edge models possess. Visual Studio Code, one of the most popular integrated development environments, does offer the same tooling that's used for frontier models, for locally run models too. Developer Experience (DX) is quite good in those terms then - a new model can be exchanged for propriatary models as a simple drop in replacement, and developers can easily experiment with models that are made by billion dollar corporations as open source models. Many of these models have licencing that permits their usage for commercial purposes and modifications.
+
+The deal does sound quite appealing, as locally run models can be run with minimal capital expense, basicly the cost of electricity, but as ever, the catch is the performance and context limitations. Gemma 4 and Qwen 3-series of quantized models do not perform well with lazily formatted input prompts, but need a lot of oversight from the developer, whereas frontier models make do with input prompts that are lacking in spesificity and figure out the problem on a human kind of way: they look at the actual code and understand large codebases to get to the bottom of a problem. Model quantization is the process of distilling a frontier model to a size that fits onto a consumer device's available memory and performance envelope. It involves turning the weigths a model uses from high precision (16-bit floating point) accuracy to a 'good enough' representation of the same weigth (ie. 4-bit integer). That's like using the value 3 and 1/8 for Pi - it saves space and 3.125 is so close to the actual value that the Roman empire could be constructed with it.
+
+In my subjective experience, the local models require an order of magnitude more babysitting and deep understanding of the codebase than frontier models. There's some promise in RAG and some harnesses that could make the models better at handling large context sizes and drift less on tasks that require intense effort for long periods of time, ie. the agentic workflow, where user gives a vague prompt and the model returns with a plan or a solution for the task. 
